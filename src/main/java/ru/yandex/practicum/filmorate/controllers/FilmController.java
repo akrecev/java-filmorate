@@ -2,8 +2,9 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.exceptions.BadRequestException;
+import ru.yandex.practicum.filmorate.exceptions.ConflictException;
+import ru.yandex.practicum.filmorate.models.Film;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -18,8 +19,8 @@ import java.util.Map;
 @Slf4j
 public class FilmController {
 
-    private final Map<Integer, Film> films = new HashMap<>();
     private final static LocalDate CINEMA_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
+    private final Map<Integer, Film> films = new HashMap<>();
     private int generateId = 1;
 
     @PostMapping
@@ -28,15 +29,15 @@ public class FilmController {
         int id = generateId++;
         film.setId(id);
         films.put(film.getId(), film);
-        log.debug("Фильм " + film.getName() + " добавлен");
+        log.debug("Фильм {} добавлен", film.getName());
         return film;
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         if (!films.containsKey(film.getId())) {
-            log.error("Фильм id: " + film.getId());
-            throw new ValidationException("Фильма с таким id не существует");
+            log.error("Фильм id: {}", film.getId());
+            throw new ConflictException("Фильма с таким id не существует");
         }
         validateReleaseDate(film);
         for (Film currentFilm : films.values()) {
@@ -49,7 +50,7 @@ public class FilmController {
             }
         }
         films.put(film.getId(), film);
-        log.debug("Фильм " + film.getName() + " id: " + film.getId() + " обновлен");
+        log.debug("Фильм {} id: {} обновлен", film.getName(), film.getId());
         return film;
     }
 
@@ -58,10 +59,10 @@ public class FilmController {
         return new ArrayList<>(films.values());
     }
 
-    private void validateReleaseDate(Film film) {
+    public void validateReleaseDate(Film film) {
         if (film.getReleaseDate().isBefore(CINEMA_BIRTHDAY)) {
-            log.error("Дата релиза: " + film.getReleaseDate());
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
+            log.error("Дата релиза: {}", film.getReleaseDate());
+            throw new BadRequestException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
     }
 

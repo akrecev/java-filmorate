@@ -2,8 +2,9 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.exceptions.BadRequestException;
+import ru.yandex.practicum.filmorate.exceptions.ConflictException;
+import ru.yandex.practicum.filmorate.models.User;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -26,15 +27,15 @@ public class UserController {
         int id = generateId++;
         user.setId(id);
         users.put(user.getId(), user);
-        log.debug("Пользователь " + user.getName() + " добавлен");
+        log.debug("Пользователь {} добавлен", user.getName());
         return user;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         if (!users.containsKey(user.getId())) {
-            log.error("Пользователь id: " + user.getId());
-            throw new ValidationException("Пользователя с таким id не существует");
+            log.error("Пользователь id: {}", user.getId());
+            throw new ConflictException("Пользователя с таким id не существует");
         }
         checkingLoginForSpace(user);
         fillingEmptyName(user);
@@ -48,7 +49,7 @@ public class UserController {
             }
         }
         users.put(user.getId(), user);
-        log.debug("Пользователь " + user.getName() + " id: " + user.getId() + " обновлен");
+        log.debug("Пользователь {} id: {} обновлен", user.getName(), user.getId());
         return user;
     }
 
@@ -59,8 +60,8 @@ public class UserController {
 
     private void checkingLoginForSpace(User user) {
         if (user.getLogin().contains(" ")) {
-            log.error("Пользователь с логином: " + user.getLogin());
-            throw new ValidationException("Логин не может содержать пробелы");
+            log.error("Пользователь с логином: {}", user.getLogin());
+            throw new BadRequestException("Логин не может содержать пробелы");
         }
     }
 
