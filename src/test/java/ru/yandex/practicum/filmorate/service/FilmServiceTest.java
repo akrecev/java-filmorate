@@ -16,12 +16,13 @@ class FilmServiceTest {
 
     Storage<Film> storage;
     FilmService filmService;
+    UserService userService;
     Film film;
 
     @BeforeEach
     void setUp() {
         storage = new InMemoryFilmStorage();
-        filmService = new FilmService(storage);
+        filmService = new FilmService(storage, userService);
         film = new Film();
         film.setName("filmName");
         film.setDescription("filmDescription");

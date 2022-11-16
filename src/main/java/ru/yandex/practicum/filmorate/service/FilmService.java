@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.Storage;
 
@@ -18,10 +17,12 @@ public class FilmService extends AbstractService<Film> {
 
     private final static LocalDate CINEMA_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
     private final static Comparator<Film> FILM_COMPARATOR = (o1, o2) -> (int) (o2.getRate() - o1.getRate());
+    private final UserService userService;
 
     @Autowired
-    public FilmService(Storage<Film> storage) {
+    public FilmService(Storage<Film> storage, UserService userService) {
         this.storage = storage;
+        this.userService = userService;
     }
 
     @Override
@@ -47,18 +48,14 @@ public class FilmService extends AbstractService<Film> {
     }
 
     public void addLike(long id, long userId) {
-        validateById(id);
-        if (userId <= 0) {
-            throw new DataNotFoundException(String.format("Invalid user id:%d", userId));
-        }
+        validate(storage.get(id));
+        userService.validate(userService.get(userId));
         storage.get(id).addLike(userId);
     }
 
     public void removeLike(long id, long userId) {
-        validateById(id);
-        if (userId <= 0) {
-            throw new DataNotFoundException(String.format("Invalid user id:%d", userId));
-        }
+        validate(storage.get(id));
+        userService.validate(userService.get(userId));
         storage.get(id).removeLike(userId);
     }
 

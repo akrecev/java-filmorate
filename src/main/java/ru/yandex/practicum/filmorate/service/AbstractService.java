@@ -14,12 +14,6 @@ public abstract class AbstractService<T extends StorageData> {
 
     protected abstract void validate(T data);
 
-    protected void validateById(long id) {
-        if (id <= 0) {
-            throw new DataNotFoundException(String.format("Invalid data id:%d", id));
-        }
-    }
-
     public T create(T data) {
         validate(data);
         data.setId(globalId++);

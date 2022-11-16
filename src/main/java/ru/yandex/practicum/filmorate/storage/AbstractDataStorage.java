@@ -15,16 +15,14 @@ public class AbstractDataStorage<T extends StorageData> implements Storage<T> {
 
     @Override
     public void create(T data) {
-        validate(data);
         if (storage.containsKey(data.getId())) {
-            throw new ConflictException("duplicate id");
+            throw new ConflictException("duplicate id: " + data.getId());
         }
         storage.put(data.getId(), data);
     }
 
     @Override
     public void update(T data) {
-        validate(data);
         if (!storage.containsKey(data.getId())) {
             throw new DataNotFoundException("id: " + data.getId());
         }
@@ -50,10 +48,5 @@ public class AbstractDataStorage<T extends StorageData> implements Storage<T> {
         return new ArrayList<>(storage.values());
     }
 
-    protected void validate(T data) {
-        if (data.getId() == null) {
-            throw new DataNotFoundException("null id");
-        }
-    }
 
 }

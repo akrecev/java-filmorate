@@ -13,10 +13,21 @@ import java.util.List;
 @Service
 public class UserService extends AbstractService<User> {
 
-
     @Autowired
     public UserService(Storage<User> storage) {
         this.storage = storage;
+    }
+
+    @Override
+    public User create(User user) {
+        setNameIfEmpty(user);
+        return super.create(user);
+    }
+
+    @Override
+    public User update(User user) {
+        setNameIfEmpty(user);
+        return super.update(user);
     }
 
     @Override
@@ -27,12 +38,6 @@ public class UserService extends AbstractService<User> {
         if (user.getLogin() == null || user.getLogin().isBlank()) {
             throw new BadRequestException("Invalid user login");
         }
-        if (user.getName() == null) {
-            user.setName(user.getLogin());
-        }
-        if (user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
         if (user.getLogin().contains(" ")) {
             throw new BadRequestException("User login contains space");
         }
@@ -42,21 +47,21 @@ public class UserService extends AbstractService<User> {
     }
 
     public void addFriend(long id, long friendId) {
-        validateById(id);
-        validateById(friendId);
+        validate(storage.get(id));
+        validate(storage.get(friendId));
         storage.get(id).addFriend(friendId);
         storage.get(friendId).addFriend(id);
     }
 
     public void removeFriend(long id, long friendId) {
-        validateById(id);
-        validateById(friendId);
+        validate(storage.get(id));
+        validate(storage.get(friendId));
         storage.get(id).removeFriend(friendId);
         storage.get(friendId).removeFriend(id);
     }
 
     public List<User> getFriends(long id) {
-        validateById(id);
+        validate(storage.get(id));
         User user = storage.get(id);
         List<Long> friendsIds = List.copyOf(user.getFriendsIds());
         List<User> friends = new ArrayList<>();
@@ -65,8 +70,8 @@ public class UserService extends AbstractService<User> {
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        validateById(id);
-        validateById(otherId);
+        validate(storage.get(id));
+        validate(storage.get(otherId));
         User user = storage.get(id);
         User otherUser = storage.get(otherId);
         List<Long> friendsIds = List.copyOf(user.getFriendsIds());
@@ -77,6 +82,15 @@ public class UserService extends AbstractService<User> {
             }
         });
         return commonFriends;
+    }
+
+    private void setNameIfEmpty(User user) {
+        if (user.getName() == null) {
+            user.setName(user.getLogin());
+        }
+        if (user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 
 }
