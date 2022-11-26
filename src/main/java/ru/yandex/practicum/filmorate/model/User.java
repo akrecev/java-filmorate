@@ -5,8 +5,8 @@ import lombok.*;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -27,14 +27,22 @@ public class User extends StorageData {
     private LocalDate birthday;
 
     @JsonIgnore
-    private Set<Long> friendsIds = new HashSet<>();
+    private Map<Long, Boolean> friends = new HashMap<>();
 
     public void addFriend(long friendId) {
-        friendsIds.add(friendId);
+        friends.put(friendId, false);
+    }
+
+    public void confirmFriendship (long friendId) {
+        friends.put(friendId, true);
+    }
+
+    public Boolean getStatusFriendship (long friendId) {
+        return friends.get(friendId);
     }
 
     public void removeFriend(long friendId) {
-        friendsIds.remove(friendId);
+        friends.remove(friendId);
     }
 
     @Override
@@ -44,7 +52,7 @@ public class User extends StorageData {
                 ", login='" + login + '\'' +
                 ", name='" + name + '\'' +
                 ", birthday=" + birthday +
-                ", friendsIds=" + friendsIds +
+                ", friendsIds=" + friends +
                 ", id=" + id +
                 '}';
     }

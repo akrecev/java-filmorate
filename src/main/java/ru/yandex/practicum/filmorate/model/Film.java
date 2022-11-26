@@ -32,6 +32,10 @@ public class Film extends StorageData {
     @JsonIgnore
     private long rate = 0L;
 
+    private Genre genre;
+
+    private Rating rating;
+
     public void addLike(long userId) {
         userLikes.add(userId);
         rate = userLikes.size();
