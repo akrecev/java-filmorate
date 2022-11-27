@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.Storage;
 
@@ -57,30 +56,9 @@ public class UserService extends AbstractService<User> {
         storage.get(friendId).addFriend(id);
     }
 
-    private void validateRequestFriendship(long id, long friendId) {
-        if (id == friendId) {
-            throw new BadRequestException("Request yourself as a friend");
-        }
-        validate(storage.get(id));
-        validate(storage.get(friendId));
-        if (!storage.get(id).getFriends().containsKey(friendId)
-                || !storage.get(friendId).getFriends().containsKey(id)) {
-            throw new DataNotFoundException("No request for friendship between" +
-                    " user id=" + id + " and user id=" + friendId);
-        }
-    }
-
-    public void confirmFriendship(long id, long friendId) {
-        validateRequestFriendship(id, friendId);
-        storage.get(id).confirmFriendship(friendId);
-        storage.get(friendId).confirmFriendship(id);
-    }
-
     public Boolean getStatusFriendship(long id, long friendId) {
-        validateRequestFriendship(id, friendId);
-        return storage.get(id).getFriends().get(friendId);
+        return storage.get(id).getFriends().contains(friendId) && storage.get(friendId).getFriends().contains(id);
     }
-
 
     public void removeFriend(long id, long friendId) {
         validate(storage.get(id));
@@ -92,7 +70,7 @@ public class UserService extends AbstractService<User> {
     public List<User> getFriends(long id) {
         validate(storage.get(id));
         User user = storage.get(id);
-        List<Long> friendsIds = List.copyOf(user.getFriends().keySet());
+        List<Long> friendsIds = List.copyOf(user.getFriends());
         List<User> friends = new ArrayList<>();
         friendsIds.forEach(friendId -> friends.add(storage.get(friendId)));
         return friends;
@@ -103,10 +81,10 @@ public class UserService extends AbstractService<User> {
         validate(storage.get(otherId));
         User user = storage.get(id);
         User otherUser = storage.get(otherId);
-        List<Long> friendsIds = List.copyOf(user.getFriends().keySet());
+        List<Long> friendsIds = List.copyOf(user.getFriends());
         List<User> commonFriends = new ArrayList<>();
         friendsIds.forEach(friendId -> {
-            if (otherUser.getFriends().containsKey(friendId)) {
+            if (otherUser.getFriends().contains(friendId)) {
                 commonFriends.add(storage.get(friendId));
             }
         });
