@@ -1,2 +1,6 @@
+Яндекс.Практикум.
 # java-filmorate
-Template repository for Filmorate project.
+#
+Диаграмма проектируемой базы данных:
+#
+<img src="./filmorate.png" alt="diagram"/>
