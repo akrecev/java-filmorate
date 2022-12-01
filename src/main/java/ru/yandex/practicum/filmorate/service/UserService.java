@@ -47,10 +47,17 @@ public class UserService extends AbstractService<User> {
     }
 
     public void addFriend(long id, long friendId) {
+        if (id == friendId) {
+            throw new BadRequestException("Adding yourself as a friend");
+        }
         validate(storage.get(id));
         validate(storage.get(friendId));
         storage.get(id).addFriend(friendId);
         storage.get(friendId).addFriend(id);
+    }
+
+    public Boolean getStatusFriendship(long id, long friendId) {
+        return storage.get(id).getFriends().contains(friendId) && storage.get(friendId).getFriends().contains(id);
     }
 
     public void removeFriend(long id, long friendId) {
@@ -63,7 +70,7 @@ public class UserService extends AbstractService<User> {
     public List<User> getFriends(long id) {
         validate(storage.get(id));
         User user = storage.get(id);
-        List<Long> friendsIds = List.copyOf(user.getFriendsIds());
+        List<Long> friendsIds = List.copyOf(user.getFriends());
         List<User> friends = new ArrayList<>();
         friendsIds.forEach(friendId -> friends.add(storage.get(friendId)));
         return friends;
@@ -74,10 +81,10 @@ public class UserService extends AbstractService<User> {
         validate(storage.get(otherId));
         User user = storage.get(id);
         User otherUser = storage.get(otherId);
-        List<Long> friendsIds = List.copyOf(user.getFriendsIds());
+        List<Long> friendsIds = List.copyOf(user.getFriends());
         List<User> commonFriends = new ArrayList<>();
         friendsIds.forEach(friendId -> {
-            if (otherUser.getFriendsIds().contains(friendId)) {
+            if (otherUser.getFriends().contains(friendId)) {
                 commonFriends.add(storage.get(friendId));
             }
         });

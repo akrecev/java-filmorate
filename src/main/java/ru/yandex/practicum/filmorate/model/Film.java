@@ -16,19 +16,16 @@ public class Film extends StorageData {
 
     @NotBlank
     private String name;
-
     @Size(min = 1, max = 200)
     private String description;
-
     @PastOrPresent
     private LocalDate releaseDate;
-
     @Positive
     private int duration;
-
+    private Genre genre;
+    private Rating rating;
     @JsonIgnore
     private Set<Long> userLikes = new HashSet<>();
-
     @JsonIgnore
     private long rate = 0L;
 

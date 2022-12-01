@@ -27,14 +27,14 @@ public class User extends StorageData {
     private LocalDate birthday;
 
     @JsonIgnore
-    private Set<Long> friendsIds = new HashSet<>();
+    private Set<Long> friends = new HashSet<>();
 
     public void addFriend(long friendId) {
-        friendsIds.add(friendId);
+        friends.add(friendId);
     }
 
     public void removeFriend(long friendId) {
-        friendsIds.remove(friendId);
+        friends.remove(friendId);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class User extends StorageData {
                 ", login='" + login + '\'' +
                 ", name='" + name + '\'' +
                 ", birthday=" + birthday +
-                ", friendsIds=" + friendsIds +
+                ", friendsIds=" + friends +
                 ", id=" + id +
                 '}';
     }
