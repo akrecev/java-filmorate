@@ -12,12 +12,12 @@ import javax.validation.constraints.Size;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Genre {
+public class Mpa {
 
     @Positive
     private int id;
 
-    @Size(min = 1, max = 50)
+    @Size(min = 1, max = 5)
     private String name;
 
 }

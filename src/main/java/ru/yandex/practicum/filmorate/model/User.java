@@ -1,18 +1,23 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class User extends StorageData {
+public class User {
+
+    Long id;
 
     @NotNull
     @Email
@@ -26,26 +31,6 @@ public class User extends StorageData {
     @PastOrPresent
     private LocalDate birthday;
 
-    @JsonIgnore
-    private Set<Long> friends = new HashSet<>();
+    private Set<User> friends = new LinkedHashSet<>();
 
-    public void addFriend(long friendId) {
-        friends.add(friendId);
-    }
-
-    public void removeFriend(long friendId) {
-        friends.remove(friendId);
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "email='" + email + '\'' +
-                ", login='" + login + '\'' +
-                ", name='" + name + '\'' +
-                ", birthday=" + birthday +
-                ", friendsIds=" + friends +
-                ", id=" + id +
-                '}';
-    }
 }
