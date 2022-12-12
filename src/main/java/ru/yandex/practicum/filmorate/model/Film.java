@@ -16,20 +16,17 @@ import java.util.LinkedHashSet;
 @NoArgsConstructor
 public class Film {
 
-    public long rate = 0L;
-
+    Long id;
     @NotBlank
     private String name;
-
     @Size(min = 1, max = 200)
     private String description;
-
     @Positive
     private int duration;
-    Long id;
     @PastOrPresent
     private LocalDate releaseDate;
-    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    public long rate = 0L;
     private Mpa mpa;
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 
 }

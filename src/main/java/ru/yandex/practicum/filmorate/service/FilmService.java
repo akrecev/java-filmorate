@@ -65,10 +65,6 @@ public class FilmService {
         return film;
     }
 
-    public void delete(long id) {
-        filmStorage.delete(id);
-    }
-
     public void validate(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new BadRequestException("Invalid film name");

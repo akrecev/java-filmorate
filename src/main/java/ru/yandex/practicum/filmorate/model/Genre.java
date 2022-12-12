@@ -16,7 +16,6 @@ public class Genre {
 
     @Positive
     private int id;
-
     @Size(min = 1, max = 50)
     private String name;
 

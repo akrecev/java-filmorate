@@ -16,7 +16,6 @@ public class Mpa {
 
     @Positive
     private int id;
-
     @Size(min = 1, max = 5)
     private String name;
 

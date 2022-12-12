@@ -18,19 +18,14 @@ import java.util.Set;
 public class User {
 
     Long id;
-
     @NotNull
     @Email
     private String email;
-
     @NotBlank
     private String login;
-
     private String name;
-
     @PastOrPresent
     private LocalDate birthday;
-
     private Set<User> friends = new LinkedHashSet<>();
 
 }
