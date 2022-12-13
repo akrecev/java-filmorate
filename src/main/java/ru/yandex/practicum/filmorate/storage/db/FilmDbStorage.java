@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -15,10 +14,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class FilmDbStorage implements FilmStorage {
@@ -42,7 +38,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Film save(Film film) {
+    public Optional<Film> save(Film film) {
         final String sql = "INSERT INTO FILMS(FILM_NAME, DESCRIPTION, DURATION, RELEASE_DATE, RATE, MPA_ID)" +
                 "VALUES(?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -56,29 +52,27 @@ public class FilmDbStorage implements FilmStorage {
             stmt.setInt(6, film.getMpa().getId());
             return stmt;
         }, keyHolder);
-        film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        final long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
+        film.setId(id);
         saveGenres(film);
-        return film;
+        return find(id);
     }
 
     @Override
-    public Film update(Film updateFilm) {
+    public Optional<Film> update(Film updateFilm) {
         final String sql = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, DURATION = ?, RELEASE_DATE = ?, " +
                 "RATE = ?, MPA_ID = ? WHERE FILM_ID = ?";
         jdbcTemplate.update(sql, updateFilm.getName(), updateFilm.getDescription(), updateFilm.getDuration(),
                 updateFilm.getReleaseDate(), updateFilm.getRate(), updateFilm.getMpa().getId(), updateFilm.getId());
         saveGenres(updateFilm);
-        return updateFilm;
+        return find(updateFilm.getId());
     }
 
     @Override
-    public Film get(long id) {
+    public Optional<Film> find(long id) {
         final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID AND F.FILM_ID = ?";
         final List<Film> films = jdbcTemplate.query(sql, FilmDbStorage::filmMapper, id);
-        if (films.isEmpty()) {
-            throw new DataNotFoundException("id=" + id);
-        }
-        return films.get(0);
+        return Optional.ofNullable(films.isEmpty() ? null : films.get(0));
     }
 
     @Override
@@ -116,8 +110,6 @@ public class FilmDbStorage implements FilmStorage {
                     }
                 }
         );
-
     }
-
 
 }

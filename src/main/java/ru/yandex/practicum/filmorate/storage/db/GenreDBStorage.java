@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage.db;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -12,6 +11,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,13 +32,10 @@ public class GenreDBStorage implements GenreStorage {
     }
 
     @Override
-    public Genre get(int id) {
+    public Optional<Genre> find(int id) {
         final String sql = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
         final List<Genre> genres = jdbcTemplate.query(sql, GenreDBStorage::genreMapper, id);
-        if (genres.isEmpty()) {
-            throw new DataNotFoundException("id=" + id);
-        }
-        return genres.get(0);
+        return Optional.ofNullable(genres.isEmpty() ? null : genres.get(0));
     }
 
     public List<Genre> getAllFilmGenres(int filmId) {

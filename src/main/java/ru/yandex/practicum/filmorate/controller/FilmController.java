@@ -20,7 +20,7 @@ public class FilmController {
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("Creat film {}", film);
-        return filmService.save(film);
+        return filmService.create(film);
     }
 
     @PutMapping

@@ -4,7 +4,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -12,6 +11,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class UserDbStorage implements UserStorage {
@@ -33,7 +33,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User save(User user) {
+    public Optional<User> save(User user) {
         String sql = "INSERT INTO USERS(EMAIL, LOGIN, USER_NAME, BIRTH_DAY) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -49,26 +49,24 @@ public class UserDbStorage implements UserStorage {
             }
             return stmt;
         }, keyHolder);
-        user.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        return user;
+        final long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
+        user.setId(id);
+        return find(id);
     }
 
     @Override
-    public User update(User updateUser) {
+    public Optional<User> update(User updateUser) {
         final String sql = "UPDATE USERS SET EMAIL = ?, LOGIN = ?, USER_NAME = ?, BIRTH_DAY = ? WHERE USER_ID = ?";
         jdbcTemplate.update(sql, updateUser.getEmail(), updateUser.getLogin(), updateUser.getName(),
                 updateUser.getBirthday(), updateUser.getId());
-        return updateUser;
+        return find(updateUser.getId());
     }
 
     @Override
-    public User get(long id) {
+    public Optional<User> find(long id) {
         final String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         final List<User> users = jdbcTemplate.query(sql, UserDbStorage::userMapper, id);
-        if (users.isEmpty()) {
-            throw new DataNotFoundException("id=" + id);
-        }
-        return users.get(0);
+        return Optional.ofNullable(users.isEmpty() ? null : users.get(0));
     }
 
     @Override

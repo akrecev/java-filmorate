@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikesStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -18,31 +17,32 @@ import java.util.List;
 public class FilmService {
 
     private final static LocalDate CINEMA_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
-    private final UserService userService;
     private final FilmStorage filmStorage;
+    private final UserService userService;
     private final LikesStorage likesStorage;
-    private final MpaStorage mpaStorage;
+    private final MpaService mpaService;
     private final GenreStorage genreStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserService userService, LikesStorage likesStorage, MpaStorage mpaStorage, GenreStorage genreStorage) {
+    public FilmService(FilmStorage filmStorage, UserService userService, LikesStorage likesStorage,
+                       MpaService mpaService, GenreStorage genreStorage) {
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.likesStorage = likesStorage;
-        this.mpaStorage = mpaStorage;
+        this.mpaService = mpaService;
         this.genreStorage = genreStorage;
     }
 
-    public Film save(Film film) {
+    public Film create(Film film) {
         validate(film);
-        filmStorage.save(film);
-        film.setMpa(mpaStorage.get(film.getMpa().getId()));
+        film = filmStorage.save(film).orElseThrow(RuntimeException::new);
+        film.setMpa(mpaService.get(film.getMpa().getId()));
         genreStorage.load(List.of(film));
         return film;
     }
 
     public Film get(long id) {
-        final Film film = filmStorage.get(id);
+        final Film film = find(id);
         genreStorage.load(List.of(film));
         return film;
     }
@@ -54,15 +54,11 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        final long id = film.getId();
-        if (filmStorage.get(id) == null) {
-            throw new DataNotFoundException("id=" + id);
-        }
         validate(film);
-        filmStorage.update(film);
-        film.setMpa(mpaStorage.get(film.getMpa().getId()));
-        genreStorage.load(List.of(film));
-        return film;
+        Film updateFilm = filmStorage.update(film).orElseThrow(() -> new DataNotFoundException("id=" + film.getId()));
+        updateFilm.setMpa(mpaService.get(updateFilm.getMpa().getId()));
+        genreStorage.load(List.of(updateFilm));
+        return updateFilm;
     }
 
     public void validate(Film film) {
@@ -87,19 +83,23 @@ public class FilmService {
     }
 
     public void addLike(long filmId, long userId) {
-        validate(filmStorage.get(filmId));
+        validate(find(filmId));
         userService.validate(userService.get(userId));
         likesStorage.addLike(filmId, userId);
     }
 
     public void removeLike(long filmId, long userId) {
-        validate(filmStorage.get(filmId));
+        validate(find(filmId));
         userService.validate(userService.get(userId));
         likesStorage.removeLike(filmId, userId);
     }
 
     public List<Film> getPopular(int count) {
         return likesStorage.getPopular(count);
+    }
+
+    private Film find(long id) {
+        return filmStorage.find(id).orElseThrow(() -> new DataNotFoundException("id=" + id));
     }
 
 }

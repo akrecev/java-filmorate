@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +25,7 @@ class FilmDbStorageTest {
     void filmDbStorageTest() {
 
         // testGet
-        Film film = filmStorage.get(1);
+        Film film = filmStorage.find(1).get();
 
         assertNotNull(film);
         assertEquals(film.getName(), "L’Arrivée d’un train en gare de la Ciotat", "Name does not match");
@@ -66,9 +66,7 @@ class FilmDbStorageTest {
                 "IndexOutOfBoundsException was expected");
         Assertions.assertEquals("Index 2 out of bounds for length 2", indexOutOfBoundsException.getMessage());
 
-        DataNotFoundException dataNotFoundException = Assertions.assertThrows(DataNotFoundException.class,
-                () -> filmStorage.get(3), "DataNotFoundException was expected");
-        Assertions.assertEquals("id=3", dataNotFoundException.getMessage());
+        assertEquals(Optional.empty(), filmStorage.find(3));
 
         // testSave
         Film filmNew = new Film();
@@ -80,7 +78,7 @@ class FilmDbStorageTest {
         filmNew.setMpa(new Mpa(2, "PG"));
 
         filmStorage.save(filmNew);
-        Film filmSave = filmStorage.get(3);
+        Film filmSave = filmStorage.find(3).get();
 
         assertNotNull(filmSave);
         assertEquals(filmSave.getName(), "Home Alone", "Name does not match");
@@ -92,14 +90,14 @@ class FilmDbStorageTest {
         assertEquals(filmSave.getMpa().getId(), 2, "Mpa does not match");
 
         // testUpdate
-        Film filmBefore = filmStorage.get(3);
+        Film filmBefore = filmStorage.find(3).get();
         filmBefore.setName("Home Alone 2: Lost in New York");
         filmBefore.setDescription("Child trolls two bandits again");
         filmBefore.setDuration(120);
         filmBefore.setReleaseDate(LocalDate.of(1992,11,20));
 
         filmStorage.update(filmBefore);
-        Film filmAfter = filmStorage.get(3);
+        Film filmAfter = filmStorage.find(3).get();
         assertEquals(filmAfter.getName(), "Home Alone 2: Lost in New York", "Name does not match");
         assertEquals(filmAfter.getDescription(), "Child trolls two bandits again",
                 "Description does not match");
@@ -111,8 +109,7 @@ class FilmDbStorageTest {
 
         // testDelete
         filmStorage.delete(1);
-        DataNotFoundException dataNotFoundException2 = Assertions.assertThrows(DataNotFoundException.class,
-                () -> filmStorage.get(1), "DataNotFoundException was expected");
-        Assertions.assertEquals("id=1", dataNotFoundException2.getMessage());
+        assertEquals(Optional.empty(), filmStorage.find(1));
+
     }
 }

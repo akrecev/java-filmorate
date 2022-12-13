@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +25,7 @@ class UserDbStorageTest {
     void userDbStorageTest() {
 
         // testGet
-        User user = userStorage.get(1);
+        User user = userStorage.find(1).get();
 
         assertNotNull(user);
         assertEquals(user.getEmail(), "a@a.com", "Email does not match");
@@ -56,9 +56,8 @@ class UserDbStorageTest {
                 "IndexOutOfBoundsException was expected");
         Assertions.assertEquals("Index 2 out of bounds for length 2", indexOutOfBoundsException.getMessage());
 
-        DataNotFoundException dataNotFoundException = Assertions.assertThrows(DataNotFoundException.class,
-                () -> userStorage.get(3), "DataNotFoundException was expected");
-        Assertions.assertEquals("id=3", dataNotFoundException.getMessage());
+        assertEquals(Optional.empty(), userStorage.find(3));
+
 
         // testSave
         User userNew = new User();
@@ -68,7 +67,7 @@ class UserDbStorageTest {
         userNew.setBirthday(LocalDate.of(2000, 1, 3));
 
         userStorage.save(userNew);
-        User userSave = userStorage.get(3);
+        User userSave = userStorage.find(3).get();
 
         assertNotNull(userSave);
         assertEquals(userSave.getEmail(), "c@c.com", "Email does not match");
@@ -78,7 +77,7 @@ class UserDbStorageTest {
                 "Birthday does not match");
 
         // testUpdate
-        User userBefore = userStorage.get(1);
+        User userBefore = userStorage.find(1).get();
 
         assertNotNull(userBefore);
         assertEquals(userBefore.getEmail(), "a@a.com", "Email does not match");
@@ -91,7 +90,7 @@ class UserDbStorageTest {
         userBefore.setName("userUpdateName");
         userBefore.setBirthday(LocalDate.of(2000, 1, 3));
         userStorage.update(userBefore);
-        User userAfter = userStorage.get(1);
+        User userAfter = userStorage.find(1).get();
 
         assertNotNull(userAfter);
         assertEquals(userAfter.getLogin(), "userUpdate", "Login does not match");
@@ -101,8 +100,7 @@ class UserDbStorageTest {
 
         // testDelete
         userStorage.delete(3);
-        DataNotFoundException dataNotFoundException2 = Assertions.assertThrows(DataNotFoundException.class,
-                () -> userStorage.get(3), "DataNotFoundException was expected");
-        Assertions.assertEquals("id=3", dataNotFoundException2.getMessage());
+        assertEquals(Optional.empty(), userStorage.find(3));
+
     }
 }

@@ -23,13 +23,14 @@ public class UserService {
         this.friendStorage = friendStorage;
     }
 
-    public User save(User user) {
+    public User create(User user) {
+        validate(user);
         setNameIfEmpty(user);
-        return userStorage.save(user);
+        return userStorage.save(user).orElseThrow(RuntimeException::new);
     }
 
     public User get(long id) {
-        return userStorage.get(id);
+        return find(id);
     }
 
     public List<User> getAll() {
@@ -37,13 +38,9 @@ public class UserService {
     }
 
     public User update(User user) {
-        final long id = user.getId();
-        if (userStorage.get(id) == null) {
-            throw new DataNotFoundException("id=" + id);
-        }
-        setNameIfEmpty(user);
         validate(user);
-        return userStorage.update(user);
+        setNameIfEmpty(user);
+        return userStorage.update(user).orElseThrow(() -> new DataNotFoundException("id:" + user.getId()));
     }
 
     public void validate(User user) {
@@ -65,40 +62,31 @@ public class UserService {
         if (id == friendId) {
             throw new BadRequestException("Adding yourself as a friend");
         }
-        final User user = userStorage.get(id);
-        final User friend = userStorage.get(friendId);
-        validate(user);
-        validate(friend);
+        find(id);
+        find(friendId);
         friendStorage.addFriend(id, friendId);
     }
 
     public void removeFriend(long id, long friendId) {
-        final User user = userStorage.get(id);
-        final User friend = userStorage.get(friendId);
-        validate(user);
-        validate(friend);
+        find(id);
+        find(friendId);
         friendStorage.removeFriend(id, friendId);
     }
 
     public List<User> getFriends(long id) {
-        final User user = userStorage.get(id);
-        validate(user);
+        find(id);
         return friendStorage.getFriends(id);
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        final User user = userStorage.get(id);
-        final User otherUser = userStorage.get(otherId);
-        validate(user);
-        validate(otherUser);
+        find(id);
+        find(otherId);
         return friendStorage.getCommonFriends(id, otherId);
     }
 
     public Boolean getStatusFriendship(long id, long friendId) {
-        final User user = userStorage.get(id);
-        final User friend = userStorage.get(friendId);
-        validate(user);
-        validate(friend);
+        find(id);
+        find(friendId);
         return friendStorage.getStatusFriendship(id, friendId);
     }
 
@@ -109,6 +97,10 @@ public class UserService {
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    private User find(long id) {
+        return userStorage.find(id).orElseThrow(() -> new DataNotFoundException("id:" + id));
     }
 
 
