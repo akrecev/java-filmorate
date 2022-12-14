@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -12,24 +12,22 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 @Slf4j
+@RequiredArgsConstructor
 public class FilmController {
 
     private final FilmService filmService;
 
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
-
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("Creat film {}", film);
+
         return filmService.create(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.debug("Update film {}", film);
+
         return filmService.update(film);
     }
 
@@ -37,12 +35,14 @@ public class FilmController {
     public List<Film> getAll() {
         List<Film> films = filmService.getAll();
         log.debug("Get all films {}", films.size());
+
         return films;
     }
 
     @GetMapping("/{id}")
     public Film get(@PathVariable long id) {
-        log.debug("Get user id:{}", id);
+        log.debug("Get film id:{}", id);
+
         return filmService.get(id);
     }
 
@@ -61,6 +61,7 @@ public class FilmController {
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
         log.debug("Get popular films count={}", count);
+
         return filmService.getPopular(count);
     }
 

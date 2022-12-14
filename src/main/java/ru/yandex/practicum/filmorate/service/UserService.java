@@ -3,35 +3,49 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
+import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.Storage;
+import ru.yandex.practicum.filmorate.storage.FriendStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class UserService extends AbstractService<User> {
+public class UserService {
+
+    private final UserStorage userStorage;
+    private final FriendStorage friendStorage;
 
     @Autowired
-    public UserService(Storage<User> storage) {
-        this.storage = storage;
+    public UserService(UserStorage userStorage, FriendStorage friendStorage) {
+        this.userStorage = userStorage;
+        this.friendStorage = friendStorage;
     }
 
-    @Override
     public User create(User user) {
+        throwBadRequest(user);
         setNameIfEmpty(user);
-        return super.create(user);
+        return userStorage.save(user);
     }
 
-    @Override
+    public User get(long id) {
+        return find(id);
+    }
+
+    public List<User> getAll() {
+        return userStorage.getAll();
+    }
+
     public User update(User user) {
+        throwBadRequest(user);
         setNameIfEmpty(user);
-        return super.update(user);
+        find(user.getId());
+
+        return userStorage.update(user);
     }
 
-    @Override
-    protected void validate(User user) {
+    public void throwBadRequest(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             throw new BadRequestException("Invalid user email");
         }
@@ -50,45 +64,35 @@ public class UserService extends AbstractService<User> {
         if (id == friendId) {
             throw new BadRequestException("Adding yourself as a friend");
         }
-        validate(storage.get(id));
-        validate(storage.get(friendId));
-        storage.get(id).addFriend(friendId);
-        storage.get(friendId).addFriend(id);
-    }
-
-    public Boolean getStatusFriendship(long id, long friendId) {
-        return storage.get(id).getFriends().contains(friendId) && storage.get(friendId).getFriends().contains(id);
+        find(id);
+        find(friendId);
+        friendStorage.addFriend(id, friendId);
     }
 
     public void removeFriend(long id, long friendId) {
-        validate(storage.get(id));
-        validate(storage.get(friendId));
-        storage.get(id).removeFriend(friendId);
-        storage.get(friendId).removeFriend(id);
+        find(id);
+        find(friendId);
+        friendStorage.removeFriend(id, friendId);
     }
 
     public List<User> getFriends(long id) {
-        validate(storage.get(id));
-        User user = storage.get(id);
-        List<Long> friendsIds = List.copyOf(user.getFriends());
-        List<User> friends = new ArrayList<>();
-        friendsIds.forEach(friendId -> friends.add(storage.get(friendId)));
-        return friends;
+        find(id);
+
+        return friendStorage.getFriends(id);
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        validate(storage.get(id));
-        validate(storage.get(otherId));
-        User user = storage.get(id);
-        User otherUser = storage.get(otherId);
-        List<Long> friendsIds = List.copyOf(user.getFriends());
-        List<User> commonFriends = new ArrayList<>();
-        friendsIds.forEach(friendId -> {
-            if (otherUser.getFriends().contains(friendId)) {
-                commonFriends.add(storage.get(friendId));
-            }
-        });
-        return commonFriends;
+        find(id);
+        find(otherId);
+
+        return friendStorage.getCommonFriends(id, otherId);
+    }
+
+    public Boolean getStatusFriendship(long id, long friendId) {
+        find(id);
+        find(friendId);
+
+        return friendStorage.getStatusFriendship(id, friendId);
     }
 
     private void setNameIfEmpty(User user) {
@@ -99,5 +103,10 @@ public class UserService extends AbstractService<User> {
             user.setName(user.getLogin());
         }
     }
+
+    private User find(long id) {
+        return userStorage.find(id).orElseThrow(() -> new DataNotFoundException("id:" + id));
+    }
+
 
 }
