@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface UserStorage{
 
-    Optional<User> save(User user);
+    User save(User user);
 
-    Optional<User> update(User user);
+    User update(User user);
 
     Optional<User> find(long id);
 

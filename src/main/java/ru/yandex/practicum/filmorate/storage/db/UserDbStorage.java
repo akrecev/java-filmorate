@@ -22,18 +22,8 @@ public class UserDbStorage implements UserStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    static User userMapper(ResultSet rs, int rowNum) throws SQLException {
-        User user = new User();
-        user.setId(rs.getLong("USER_ID"));
-        user.setEmail(rs.getString("EMAIL"));
-        user.setLogin(rs.getString("LOGIN"));
-        user.setName(rs.getString("USER_NAME"));
-        user.setBirthday(rs.getDate("BIRTH_DAY").toLocalDate());
-        return user;
-    }
-
     @Override
-    public Optional<User> save(User user) {
+    public User save(User user) {
         String sql = "INSERT INTO USERS(EMAIL, LOGIN, USER_NAME, BIRTH_DAY) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -51,21 +41,24 @@ public class UserDbStorage implements UserStorage {
         }, keyHolder);
         final long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
         user.setId(id);
-        return find(id);
+
+        return find(id).get();
     }
 
     @Override
-    public Optional<User> update(User updateUser) {
+    public User update(User updateUser) {
         final String sql = "UPDATE USERS SET EMAIL = ?, LOGIN = ?, USER_NAME = ?, BIRTH_DAY = ? WHERE USER_ID = ?";
         jdbcTemplate.update(sql, updateUser.getEmail(), updateUser.getLogin(), updateUser.getName(),
                 updateUser.getBirthday(), updateUser.getId());
-        return find(updateUser.getId());
+
+        return find(updateUser.getId()).get();
     }
 
     @Override
     public Optional<User> find(long id) {
         final String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
         final List<User> users = jdbcTemplate.query(sql, UserDbStorage::userMapper, id);
+
         return Optional.ofNullable(users.isEmpty() ? null : users.get(0));
     }
 
@@ -78,6 +71,19 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getAll() {
         final String sql = "SELECT * FROM USERS";
+
         return jdbcTemplate.query(sql, UserDbStorage::userMapper);
     }
+
+    static User userMapper(ResultSet rs, int rowNum) throws SQLException {
+        User user = new User();
+        user.setId(rs.getLong("USER_ID"));
+        user.setEmail(rs.getString("EMAIL"));
+        user.setLogin(rs.getString("LOGIN"));
+        user.setName(rs.getString("USER_NAME"));
+        user.setBirthday(rs.getDate("BIRTH_DAY").toLocalDate());
+
+        return user;
+    }
+
 }

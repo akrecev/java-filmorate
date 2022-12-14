@@ -33,6 +33,7 @@ public class LikesDbStorage implements LikesStorage {
     @Override
     public List<Film> getPopular(int count) {
         final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID ORDER BY RATE LIMIT ?";
+
         return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, count);
     }
 

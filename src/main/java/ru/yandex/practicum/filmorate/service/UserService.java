@@ -24,9 +24,9 @@ public class UserService {
     }
 
     public User create(User user) {
-        validate(user);
+        throwBadRequest(user);
         setNameIfEmpty(user);
-        return userStorage.save(user).orElseThrow(RuntimeException::new);
+        return userStorage.save(user);
     }
 
     public User get(long id) {
@@ -38,12 +38,14 @@ public class UserService {
     }
 
     public User update(User user) {
-        validate(user);
+        throwBadRequest(user);
         setNameIfEmpty(user);
-        return userStorage.update(user).orElseThrow(() -> new DataNotFoundException("id:" + user.getId()));
+        find(user.getId());
+
+        return userStorage.update(user);
     }
 
-    public void validate(User user) {
+    public void throwBadRequest(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             throw new BadRequestException("Invalid user email");
         }
@@ -75,18 +77,21 @@ public class UserService {
 
     public List<User> getFriends(long id) {
         find(id);
+
         return friendStorage.getFriends(id);
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
         find(id);
         find(otherId);
+
         return friendStorage.getCommonFriends(id, otherId);
     }
 
     public Boolean getStatusFriendship(long id, long friendId) {
         find(id);
         find(friendId);
+
         return friendStorage.getStatusFriendship(id, friendId);
     }
 

@@ -24,12 +24,14 @@ public class GenreController {
     public List<Genre> getAll() {
         List<Genre> genres = genreService.getAll();
         log.debug("Get all genres {}", genres.size());
+
         return genres;
     }
 
     @GetMapping("/{id}")
     public Genre get(@PathVariable int id) {
         log.debug("Get genre id:{}", id);
+
         return genreService.get(id);
     }
 }

@@ -20,12 +20,14 @@ public class UserController {
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         log.debug("Creat user {}", user);
+
         return userService.create(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         log.debug("Update user {}", user);
+
         return userService.update(user);
     }
 
@@ -33,12 +35,14 @@ public class UserController {
     public List<User> getUsers() {
         List<User> users = userService.getAll();
         log.debug("Get all users {}", users.size());
+
         return users;
     }
 
     @GetMapping("/{id}")
     public User get(@PathVariable long id) {
         log.debug("Get user id:{}", id);
+
         return userService.get(id);
     }
 
@@ -58,6 +62,7 @@ public class UserController {
     public List<User> getFriends(@PathVariable long id) {
         List<User> friends = userService.getFriends(id);
         log.debug("Get user id:{} friends", id);
+
         return friends;
     }
 
@@ -65,6 +70,7 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         List<User> commonFriends = userService.getCommonFriends(id, otherId);
         log.debug("Get common friends user id:{} & user id:{}", id, otherId);
+
         return commonFriends;
     }
 

@@ -31,6 +31,7 @@ public class FriendDBStorage implements FriendStorage {
     @Override
     public List<User> getFriends(long userId) {
         final String sql = "SELECT * FROM USERS U, FRIENDS F WHERE U.USER_ID = F.FRIEND_ID AND F.USER_ID = ?";
+
         return jdbcTemplate.query(sql, UserDbStorage::userMapper, userId);
     }
 
@@ -38,6 +39,7 @@ public class FriendDBStorage implements FriendStorage {
     public List<User> getCommonFriends(long userId, long otherId) {
         final String sql = "SELECT * FROM USERS U, FRIENDS F, FRIENDS O" +
                 " WHERE U.USER_ID = F.FRIEND_ID AND U.USER_ID = O.FRIEND_ID AND F.USER_ID = ? AND O.USER_ID = ?";
+
         return jdbcTemplate.query(sql, UserDbStorage::userMapper, userId, otherId);
     }
 
@@ -45,6 +47,7 @@ public class FriendDBStorage implements FriendStorage {
     public Boolean getStatusFriendship(long userId, long friendId) {
         final String sql = "SELECT * FROM FRIENDS F, FRIENDS O" +
                 " WHERE F.USER_ID = O.FRIEND_ID AND O.USER_ID = F.FRIEND_ID AND F.USER_ID = ? AND O.USER_ID = ?";
+
         return !jdbcTemplate.queryForList(sql, userId, friendId).isEmpty();
     }
 }

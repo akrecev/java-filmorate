@@ -34,34 +34,39 @@ public class FilmService {
     }
 
     public Film create(Film film) {
-        validate(film);
-        film = filmStorage.save(film).orElseThrow(RuntimeException::new);
+        throwBadRequest(film);
+        film = filmStorage.save(film);
         film.setMpa(mpaService.get(film.getMpa().getId()));
         genreStorage.load(List.of(film));
+
         return film;
     }
 
     public Film get(long id) {
         final Film film = find(id);
         genreStorage.load(List.of(film));
+
         return film;
     }
 
     public List<Film> getAll() {
         final List<Film> allFilms = filmStorage.getAll();
         genreStorage.load(allFilms);
+
         return allFilms;
     }
 
     public Film update(Film film) {
-        validate(film);
-        Film updateFilm = filmStorage.update(film).orElseThrow(() -> new DataNotFoundException("id=" + film.getId()));
+        throwBadRequest(film);
+        find(film.getId());
+        Film updateFilm = filmStorage.update(film);
         updateFilm.setMpa(mpaService.get(updateFilm.getMpa().getId()));
         genreStorage.load(List.of(updateFilm));
+
         return updateFilm;
     }
 
-    public void validate(Film film) {
+    public void throwBadRequest(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new BadRequestException("Invalid film name");
         }
@@ -83,14 +88,14 @@ public class FilmService {
     }
 
     public void addLike(long filmId, long userId) {
-        validate(find(filmId));
-        userService.validate(userService.get(userId));
+        throwBadRequest(find(filmId));
+        userService.throwBadRequest(userService.get(userId));
         likesStorage.addLike(filmId, userId);
     }
 
     public void removeLike(long filmId, long userId) {
-        validate(find(filmId));
-        userService.validate(userService.get(userId));
+        throwBadRequest(find(filmId));
+        userService.throwBadRequest(userService.get(userId));
         likesStorage.removeLike(filmId, userId);
     }
 

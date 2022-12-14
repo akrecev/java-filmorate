@@ -25,20 +25,8 @@ public class FilmDbStorage implements FilmStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    static Film filmMapper(ResultSet rs, int rowNum) throws SQLException {
-        Film film = new Film();
-        film.setId(rs.getLong("FILM_ID"));
-        film.setName(rs.getString("FILM_NAME"));
-        film.setDescription(rs.getString("DESCRIPTION"));
-        film.setDuration(rs.getInt("DURATION"));
-        film.setReleaseDate(rs.getDate("RELEASE_DATE").toLocalDate());
-        film.setRate(rs.getLong("RATE"));
-        film.setMpa(new Mpa(rs.getInt("MPA.MPA_ID"), rs.getString("MPA.MPA_NAME")));
-        return film;
-    }
-
     @Override
-    public Optional<Film> save(Film film) {
+    public Film save(Film film) {
         final String sql = "INSERT INTO FILMS(FILM_NAME, DESCRIPTION, DURATION, RELEASE_DATE, RATE, MPA_ID)" +
                 "VALUES(?, ?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -55,23 +43,26 @@ public class FilmDbStorage implements FilmStorage {
         final long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
         film.setId(id);
         saveGenres(film);
-        return find(id);
+
+        return find(id).get();
     }
 
     @Override
-    public Optional<Film> update(Film updateFilm) {
+    public Film update(Film updateFilm) {
         final String sql = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, DURATION = ?, RELEASE_DATE = ?, " +
                 "RATE = ?, MPA_ID = ? WHERE FILM_ID = ?";
         jdbcTemplate.update(sql, updateFilm.getName(), updateFilm.getDescription(), updateFilm.getDuration(),
                 updateFilm.getReleaseDate(), updateFilm.getRate(), updateFilm.getMpa().getId(), updateFilm.getId());
         saveGenres(updateFilm);
-        return find(updateFilm.getId());
+
+        return find(updateFilm.getId()).get();
     }
 
     @Override
     public Optional<Film> find(long id) {
         final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID AND F.FILM_ID = ?";
         final List<Film> films = jdbcTemplate.query(sql, FilmDbStorage::filmMapper, id);
+
         return Optional.ofNullable(films.isEmpty() ? null : films.get(0));
     }
 
@@ -84,7 +75,21 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getAll() {
         final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID";
+
         return jdbcTemplate.query(sql, FilmDbStorage::filmMapper);
+    }
+
+    static Film filmMapper(ResultSet rs, int rowNum) throws SQLException {
+        Film film = new Film();
+        film.setId(rs.getLong("FILM_ID"));
+        film.setName(rs.getString("FILM_NAME"));
+        film.setDescription(rs.getString("DESCRIPTION"));
+        film.setDuration(rs.getInt("DURATION"));
+        film.setReleaseDate(rs.getDate("RELEASE_DATE").toLocalDate());
+        film.setRate(rs.getLong("RATE"));
+        film.setMpa(new Mpa(rs.getInt("MPA.MPA_ID"), rs.getString("MPA.MPA_NAME")));
+
+        return film;
     }
 
     private void saveGenres(Film film) {

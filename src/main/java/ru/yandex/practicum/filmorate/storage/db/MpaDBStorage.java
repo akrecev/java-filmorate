@@ -19,6 +19,21 @@ public class MpaDBStorage implements MpaStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
+    public Optional<Mpa> find(int id) {
+        final String sql = "SELECT * FROM MPA WHERE MPA_ID = ?";
+        final List<Mpa> mpa = jdbcTemplate.query(sql, MpaDBStorage::mpaMapper, id);
+
+        return Optional.ofNullable(mpa.isEmpty() ? null : mpa.get(0));
+    }
+
+    @Override
+    public List<Mpa> getAll() {
+        final String sql = "SELECT * FROM MPA";
+
+        return jdbcTemplate.query(sql, MpaDBStorage::mpaMapper);
+    }
+
     static Mpa mpaMapper(ResultSet rs, int rowNum) throws SQLException {
         return new Mpa(
                 rs.getInt("MPA_ID"),
@@ -26,16 +41,4 @@ public class MpaDBStorage implements MpaStorage {
         );
     }
 
-    @Override
-    public Optional<Mpa> find(int id) {
-        final String sql = "SELECT * FROM MPA WHERE MPA_ID = ?";
-        final List<Mpa> mpa = jdbcTemplate.query(sql, MpaDBStorage::mpaMapper, id);
-        return Optional.ofNullable(mpa.isEmpty() ? null : mpa.get(0));
-    }
-
-    @Override
-    public List<Mpa> getAll() {
-        final String sql = "SELECT * FROM MPA";
-        return jdbcTemplate.query(sql, MpaDBStorage::mpaMapper);
-    }
 }

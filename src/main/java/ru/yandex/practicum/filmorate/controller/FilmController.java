@@ -20,12 +20,14 @@ public class FilmController {
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.debug("Creat film {}", film);
+
         return filmService.create(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.debug("Update film {}", film);
+
         return filmService.update(film);
     }
 
@@ -33,12 +35,14 @@ public class FilmController {
     public List<Film> getAll() {
         List<Film> films = filmService.getAll();
         log.debug("Get all films {}", films.size());
+
         return films;
     }
 
     @GetMapping("/{id}")
     public Film get(@PathVariable long id) {
         log.debug("Get film id:{}", id);
+
         return filmService.get(id);
     }
 
@@ -57,6 +61,7 @@ public class FilmController {
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
         log.debug("Get popular films count={}", count);
+
         return filmService.getPopular(count);
     }
 

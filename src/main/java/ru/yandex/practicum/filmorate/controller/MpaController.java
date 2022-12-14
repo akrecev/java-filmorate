@@ -23,12 +23,14 @@ public class MpaController {
     public List<Mpa> getAll() {
         List<Mpa> mpas = mpaService.getAll();
         log.debug("Get all mpa {}", mpas.size());
+
         return mpas;
     }
 
     @GetMapping("/{id}")
     public Mpa get(@PathVariable int id) {
         log.debug("Get user id:{}", id);
+
         return mpaService.get(id);
     }
 

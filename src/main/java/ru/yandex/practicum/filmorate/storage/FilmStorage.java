@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface FilmStorage {
 
-    Optional<Film> save(Film film);
+    Film save(Film film);
 
-    Optional<Film> update(Film film);
+    Film update(Film film);
 
     Optional<Film> find(long id);
 
