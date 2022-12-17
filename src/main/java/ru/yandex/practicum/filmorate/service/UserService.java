@@ -34,7 +34,7 @@ public class UserService {
     }
 
     public List<User> getAll() {
-        return userStorage.getAll();
+        return userStorage.findAll();
     }
 
     public User update(User user) {
@@ -43,6 +43,14 @@ public class UserService {
         find(user.getId());
 
         return userStorage.update(user);
+    }
+
+    public void delete(long id) {
+        userStorage.delete(id);
+    }
+
+    public void deleteAll() {
+        userStorage.deleteAll();
     }
 
     public void throwBadRequest(User user) {

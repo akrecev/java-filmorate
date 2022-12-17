@@ -48,6 +48,21 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Optional<Film> find(long id) {
+        final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID AND F.FILM_ID = ?";
+        final List<Film> films = jdbcTemplate.query(sql, FilmDbStorage::filmMapper, id);
+
+        return Optional.ofNullable(films.isEmpty() ? null : films.get(0));
+    }
+
+    @Override
+    public List<Film> findAll() {
+        final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID";
+
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper);
+    }
+
+    @Override
     public Film update(Film updateFilm) {
         final String sql = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, DURATION = ?, RELEASE_DATE = ?, " +
                 "RATE = ?, MPA_ID = ? WHERE FILM_ID = ?";
@@ -59,24 +74,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<Film> find(long id) {
-        final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID AND F.FILM_ID = ?";
-        final List<Film> films = jdbcTemplate.query(sql, FilmDbStorage::filmMapper, id);
-
-        return Optional.ofNullable(films.isEmpty() ? null : films.get(0));
-    }
-
-    @Override
     public void delete(long id) {
         final String sql = "DELETE FROM FILMS WHERE FILM_ID = ?";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
-    public List<Film> getAll() {
-        final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID";
-
-        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper);
+    public void deleteAll() {
+        final String sql ="DELETE FROM FILMS";
+        jdbcTemplate.update(sql);
     }
 
     static Film filmMapper(ResultSet rs, int rowNum) throws SQLException {

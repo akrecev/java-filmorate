@@ -9,12 +9,14 @@ public interface UserStorage{
 
     User save(User user);
 
-    User update(User user);
-
     Optional<User> find(long id);
+
+    List<User> findAll();
+
+    User update(User user);
 
     void delete(long id);
 
-    List<User> getAll();
+    void deleteAll();
 
 }

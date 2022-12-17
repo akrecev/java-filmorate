@@ -9,12 +9,14 @@ public interface FilmStorage {
 
     Film save(Film film);
 
-    Film update(Film film);
-
     Optional<Film> find(long id);
+
+    List<Film> findAll();
+
+    Film update(Film film);
 
     void delete(long id);
 
-    List<Film> getAll();
+    void deleteAll();
 
 }

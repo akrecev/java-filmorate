@@ -50,7 +50,7 @@ public class FilmService {
     }
 
     public List<Film> getAll() {
-        final List<Film> allFilms = filmStorage.getAll();
+        final List<Film> allFilms = filmStorage.findAll();
         genreStorage.load(allFilms);
 
         return allFilms;
@@ -64,6 +64,14 @@ public class FilmService {
         genreStorage.load(List.of(updateFilm));
 
         return updateFilm;
+    }
+
+    public void delete(long id) {
+        filmStorage.delete(id);
+    }
+
+    public void deleteAll() {
+        filmStorage.deleteAll();
     }
 
     public void throwBadRequest(Film film) {
@@ -96,7 +104,7 @@ public class FilmService {
     public void removeLike(long filmId, long userId) {
         throwBadRequest(find(filmId));
         userService.throwBadRequest(userService.get(userId));
-        likesStorage.removeLike(filmId, userId);
+        likesStorage.deleteLike(filmId, userId);
     }
 
     public List<Film> getPopular(int count) {

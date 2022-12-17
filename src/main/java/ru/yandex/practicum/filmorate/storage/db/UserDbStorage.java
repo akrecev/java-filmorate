@@ -46,6 +46,21 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public Optional<User> find(long id) {
+        final String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
+        final List<User> users = jdbcTemplate.query(sql, UserDbStorage::userMapper, id);
+
+        return Optional.ofNullable(users.isEmpty() ? null : users.get(0));
+    }
+
+    @Override
+    public List<User> findAll() {
+        final String sql = "SELECT * FROM USERS";
+
+        return jdbcTemplate.query(sql, UserDbStorage::userMapper);
+    }
+
+    @Override
     public User update(User updateUser) {
         final String sql = "UPDATE USERS SET EMAIL = ?, LOGIN = ?, USER_NAME = ?, BIRTH_DAY = ? WHERE USER_ID = ?";
         jdbcTemplate.update(sql, updateUser.getEmail(), updateUser.getLogin(), updateUser.getName(),
@@ -55,24 +70,15 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> find(long id) {
-        final String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
-        final List<User> users = jdbcTemplate.query(sql, UserDbStorage::userMapper, id);
-
-        return Optional.ofNullable(users.isEmpty() ? null : users.get(0));
-    }
-
-    @Override
     public void delete(long id) {
         final String sql = "DELETE FROM USERS WHERE USER_ID = ?";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
-    public List<User> getAll() {
-        final String sql = "SELECT * FROM USERS";
-
-        return jdbcTemplate.query(sql, UserDbStorage::userMapper);
+    public void deleteAll() {
+        final String sql = "DELETE FROM USERS";
+        jdbcTemplate.update(sql);
     }
 
     static User userMapper(ResultSet rs, int rowNum) throws SQLException {

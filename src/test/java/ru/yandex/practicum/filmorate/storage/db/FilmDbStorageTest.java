@@ -38,7 +38,7 @@ class FilmDbStorageTest {
         assertEquals(film.getMpa().getId(), 3, "Mpa does not match");
 
         // testGetAll
-        List<Film> films = filmStorage.getAll();
+        List<Film> films = filmStorage.findAll();
 
         assertNotNull(films.get(0));
         assertEquals(films.get(0).getName(), "L’Arrivée d’un train en gare de la Ciotat",

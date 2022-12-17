@@ -24,11 +24,11 @@ public class UserController {
         return userService.create(user);
     }
 
-    @PutMapping
-    public User update(@Valid @RequestBody User user) {
-        log.debug("Update user {}", user);
+    @GetMapping("/{id}")
+    public User get(@PathVariable long id) {
+        log.debug("Get user id:{}", id);
 
-        return userService.update(user);
+        return userService.get(id);
     }
 
     @GetMapping
@@ -39,11 +39,23 @@ public class UserController {
         return users;
     }
 
-    @GetMapping("/{id}")
-    public User get(@PathVariable long id) {
-        log.debug("Get user id:{}", id);
+    @PutMapping
+    public User update(@Valid @RequestBody User user) {
+        log.debug("Update user {}", user);
 
-        return userService.get(id);
+        return userService.update(user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable long id) {
+        log.debug("Delete user id: {}", id);
+        userService.delete(id);
+    }
+
+    @DeleteMapping
+    public void deleteAll() {
+        log.debug("Delete ALL users");
+        userService.deleteAll();
     }
 
     @PutMapping("/{id}/friends/{friendId}")

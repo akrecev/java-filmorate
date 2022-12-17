@@ -8,7 +8,11 @@ public interface LikesStorage {
 
     void addLike(long filmId, long userId);
 
-    void removeLike(long filmId, long userId);
+    void deleteLike(long filmId, long userId);
+
+    public void deleteUserLikes(long userId);
+
+    public void deleteFilmLikes(long filmId);
 
     List<Film> getPopular(int count);
 

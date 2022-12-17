@@ -32,7 +32,7 @@ public class GenreDBStorage implements GenreStorage {
         return Optional.ofNullable(genres.isEmpty() ? null : genres.get(0));
     }
 
-    public List<Genre> getAllFilmGenres(int filmId) {
+    public List<Genre> getFilmAllGenres(int filmId) {
         final String sql = "SELECT * FROM FILM_GENRES F, GENRES G WHERE F.GENRE_ID = G.GENRE_ID AND F.FILM_ID = ?";
 
         return jdbcTemplate.query(sql, GenreDBStorage::genreMapper, filmId);

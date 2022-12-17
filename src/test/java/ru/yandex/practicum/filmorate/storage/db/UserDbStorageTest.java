@@ -35,7 +35,7 @@ class UserDbStorageTest {
                 "Birthday does not match");
 
         // testGetAll
-        List<User> users = userStorage.getAll();
+        List<User> users = userStorage.findAll();
 
         assertNotNull(users.get(0));
         assertEquals(users.get(0).getEmail(), "a@a.com", "Email does not match");

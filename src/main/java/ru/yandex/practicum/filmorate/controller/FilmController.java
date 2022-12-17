@@ -24,11 +24,11 @@ public class FilmController {
         return filmService.create(film);
     }
 
-    @PutMapping
-    public Film update(@Valid @RequestBody Film film) {
-        log.debug("Update film {}", film);
+    @GetMapping("/{id}")
+    public Film get(@PathVariable long id) {
+        log.debug("Get film id:{}", id);
 
-        return filmService.update(film);
+        return filmService.get(id);
     }
 
     @GetMapping
@@ -39,11 +39,23 @@ public class FilmController {
         return films;
     }
 
-    @GetMapping("/{id}")
-    public Film get(@PathVariable long id) {
-        log.debug("Get film id:{}", id);
+    @PutMapping
+    public Film update(@Valid @RequestBody Film film) {
+        log.debug("Update film {}", film);
 
-        return filmService.get(id);
+        return filmService.update(film);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable long id) {
+        log.debug("Delete film id:{}", id);
+        filmService.delete(id);
+    }
+
+    @DeleteMapping
+    public void deleteAll() {
+        log.debug("Delete ALL films");
+        filmService.deleteAll();
     }
 
     @PutMapping("/{id}/like/{userId}")
