@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,12 +11,11 @@ import javax.validation.constraints.Size;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Review {
 
     @Positive
     private long id;
-
-    private int rate = 0;
 
     private boolean isPositive;
 
@@ -26,6 +26,8 @@ public class Review {
     private String content;
 
     @Positive
-    private int filmId;
+    private long filmId;
+
+    private long rate = 0L;
 
 }

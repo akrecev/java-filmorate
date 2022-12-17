@@ -20,4 +20,16 @@ public class ReviewService {
 
     public void delete(long id) {
     }
+
+    public void addLike(long id, long userId) {
+    }
+
+    public void addDislike(long id, long userId) {
+    }
+
+    public void deleteLike(long id, long userId) {
+    }
+
+    public void deleteDislike(long id, long userId) {
+    }
 }

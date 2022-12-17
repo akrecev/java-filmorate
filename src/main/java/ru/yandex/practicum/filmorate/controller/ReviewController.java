@@ -34,7 +34,7 @@ public class ReviewController {
     @GetMapping("?filmId={filmId}&count={count}")
     private List<Review> getAllFilmReviews(@PathVariable long filmId, @PathVariable int count) {
         List<Review> reviews =  reviewService.getAllFilmReviews(filmId, count);
-        log.debug("Get {} reviews for the film id:{}", reviews.size(), filmId);
+        log.debug("Get {} reviews for film id:{}", reviews.size(), filmId);
 
         return reviews;
     }
@@ -50,6 +50,30 @@ public class ReviewController {
     public void delete(@PathVariable long id) {
         log.debug("Delete review id:{}", id);
         reviewService.delete(id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable long id, @PathVariable long userId) {
+        log.debug("User id:{} add like for review id:{}", userId, id);
+        reviewService.addLike(id, userId);
+    }
+
+    @PutMapping("/{id}/dislike/{userId}")
+    public void addDislike(@PathVariable long id, @PathVariable long userId) {
+        log.debug("User id: {} add dislike for review id:{}", userId, id);
+        reviewService.addDislike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable long id, @PathVariable long userId) {
+        log.debug("User id:{} add like for review id:{}", userId, id);
+        reviewService.deleteLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/dislike/{userId}")
+    public void deleteDislike(@PathVariable long id, @PathVariable long userId) {
+        log.debug("User id: {} add dislike for review id:{}", userId, id);
+        reviewService.deleteDislike(id, userId);
     }
 
 }
