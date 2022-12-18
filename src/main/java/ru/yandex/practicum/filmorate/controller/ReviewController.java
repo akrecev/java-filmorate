@@ -31,9 +31,16 @@ public class ReviewController {
         return reviewService.get(id);
     }
 
-    @GetMapping("?filmId={filmId}&count={count}")
-    private List<Review> getAllFilmReviews(@PathVariable long filmId, @PathVariable int count) {
-        List<Review> reviews =  reviewService.getAllFilmReviews(filmId, count);
+    @GetMapping()
+    private List<Review> getFilmAllReviews(@RequestParam(defaultValue = "0") long filmId,
+                                           @RequestParam(defaultValue = "10") int count) {
+        if (filmId == 0) {
+            List<Review> reviews = reviewService.getAllReviews(count);
+            log.debug("Get {} reviews", reviews.size());
+
+            return reviews;
+        }
+        List<Review> reviews = reviewService.getFilmAllReviews(filmId, count);
         log.debug("Get {} reviews for film id:{}", reviews.size(), filmId);
 
         return reviews;

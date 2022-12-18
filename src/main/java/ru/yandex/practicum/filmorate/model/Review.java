@@ -14,10 +14,9 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 public class Review {
 
-    @Positive
     private long id;
 
-    private boolean isPositive;
+    private boolean positive;
 
     @Size(min = 1, max = 255)
     private String header;
@@ -27,6 +26,9 @@ public class Review {
 
     @Positive
     private long filmId;
+
+    @Positive
+    private long userId;
 
     private long rate = 0L;
 
