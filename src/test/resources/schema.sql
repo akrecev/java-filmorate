@@ -27,6 +27,7 @@ create table if not exists FILMS
         primary key (FILM_ID),
     constraint FILMS_MPA_MPA_ID_FK
         foreign key (MPA_ID) references MPA
+            on delete cascade
 );
 
 create table if not exists USERS
@@ -49,9 +50,11 @@ create table if not exists FILM_GENRES
     constraint "FILM_GENRES_pk"
         primary key (FILM_ID, GENRE_ID),
     constraint "FILM_GENRES_FILMS_null_fk"
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references FILMS
+            on delete cascade,
     constraint "FILM_GENRES_GENRES_null_fk"
         foreign key (GENRE_ID) references GENRES
+            on delete cascade
 );
 
 create table if not exists FRIENDS
@@ -61,9 +64,11 @@ create table if not exists FRIENDS
     constraint FRIENDS_PK
         primary key (USER_ID, FRIEND_ID),
     constraint USER_FRIENDS_USERS_USER_ID_FK
-        foreign key (USER_ID) references USERS,
+        foreign key (USER_ID) references USERS
+            on delete cascade,
     constraint USER_FRIENDS_USERS_USER_ID_FK_2
         foreign key (FRIEND_ID) references USERS
+            on delete cascade
 );
 
 create table if not exists LIKES

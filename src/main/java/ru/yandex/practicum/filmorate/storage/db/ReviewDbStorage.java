@@ -115,7 +115,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 "(SELECT COUNT(L.USER_ID) FROM REVIEW_LIKES L WHERE L.REVIEW_ID = ?)" +
                 " - (SELECT COUNT(D.USER_ID) FROM REVIEW_DISLIKES D WHERE D.REVIEW_ID = ?)" +
                 ") WHERE R.REVIEW_ID = ?";
-        jdbcTemplate.update(sql, id);
+        jdbcTemplate.update(sql, id, id, id);
     }
 
     static Review reviewMapper(ResultSet rs, int rowNum) throws SQLException {

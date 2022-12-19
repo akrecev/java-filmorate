@@ -12,13 +12,11 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewStorage reviewStorage;
-    private final FilmService filmService;
     private final UserService userService;
 
     @Autowired
-    public ReviewService(ReviewStorage reviewStorage, FilmService filmService, UserService userService) {
+    public ReviewService(ReviewStorage reviewStorage, UserService userService) {
         this.reviewStorage = reviewStorage;
-        this.filmService = filmService;
         this.userService = userService;
     }
 
@@ -54,12 +52,21 @@ public class ReviewService {
     }
 
     public void addDislike(long id, long userId) {
+        find(id);
+        userService.find(userId);
+        reviewStorage.addDislike(id, userId);
     }
 
     public void deleteLike(long id, long userId) {
+        find(id);
+        userService.find(userId);
+        reviewStorage.deleteLike(id, userId);
     }
 
     public void deleteDislike(long id, long userId) {
+        find(id);
+        userService.find(userId);
+        reviewStorage.deleteDislike(id, userId);
     }
 
     private Review find(long id) {
