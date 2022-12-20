@@ -66,6 +66,10 @@ public class FilmService {
         return updateFilm;
     }
 
+    public void delete(long id) {
+        filmStorage.delete(id);
+    }
+
     public void throwBadRequest(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new BadRequestException("Invalid film name");
