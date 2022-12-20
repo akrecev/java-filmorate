@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,10 +24,10 @@ public class Film {
     private String description;
     @Positive
     private int duration;
-    @PastOrPresent
+
     private LocalDate releaseDate;
     public long rate = 0L;
     private Mpa mpa;
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
-
+    private LinkedHashSet<Director> directors = new LinkedHashSet<>();
 }

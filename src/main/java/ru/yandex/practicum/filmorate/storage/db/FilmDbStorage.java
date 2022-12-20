@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -43,6 +44,7 @@ public class FilmDbStorage implements FilmStorage {
         final long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
         film.setId(id);
         saveGenres(film);
+        saveDirectors(film);
 
         return find(id).get();
     }
@@ -54,6 +56,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, updateFilm.getName(), updateFilm.getDescription(), updateFilm.getDuration(),
                 updateFilm.getReleaseDate(), updateFilm.getMpa().getId(), updateFilm.getId());
         saveGenres(updateFilm);
+        saveDirectors(updateFilm);
 
         return find(updateFilm.getId()).get();
     }
@@ -117,4 +120,28 @@ public class FilmDbStorage implements FilmStorage {
         );
     }
 
+    private void saveDirectors(Film film) {
+        final long filmId = film.getId();
+        jdbcTemplate.update("DELETE FROM FILM_DIRECTORS WHERE FILM_ID = ?", filmId);
+        final LinkedHashSet<Director> directors = film.getDirectors();
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+        final List<Director> directorList = new LinkedList<>(directors);
+        jdbcTemplate.batchUpdate(
+                "MERGE INTO FILM_DIRECTORS(FILM_ID, DIRECTOR_ID) VALUES (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setLong(1, filmId);
+                        ps.setLong(2, directorList.get(i).getId());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return directorList.size();
+                    }
+                }
+        );
+    }
 }

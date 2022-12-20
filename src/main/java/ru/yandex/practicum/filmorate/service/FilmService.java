@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikesStorage;
@@ -22,15 +23,17 @@ public class FilmService {
     private final LikesStorage likesStorage;
     private final MpaService mpaService;
     private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserService userService, LikesStorage likesStorage,
-                       MpaService mpaService, GenreStorage genreStorage) {
+                       MpaService mpaService, GenreStorage genreStorage, DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.likesStorage = likesStorage;
         this.mpaService = mpaService;
         this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
     }
 
     public Film create(Film film) {
@@ -38,6 +41,7 @@ public class FilmService {
         film = filmStorage.save(film);
         film.setMpa(mpaService.get(film.getMpa().getId()));
         genreStorage.load(List.of(film));
+        directorStorage.load(List.of(film));
 
         return film;
     }
@@ -45,6 +49,7 @@ public class FilmService {
     public Film get(long id) {
         final Film film = find(id);
         genreStorage.load(List.of(film));
+        directorStorage.load(List.of(film));
 
         return film;
     }
@@ -52,6 +57,7 @@ public class FilmService {
     public List<Film> getAll() {
         final List<Film> allFilms = filmStorage.getAll();
         genreStorage.load(allFilms);
+        directorStorage.load(allFilms);
 
         return allFilms;
     }
@@ -62,6 +68,7 @@ public class FilmService {
         Film updateFilm = filmStorage.update(film);
         updateFilm.setMpa(mpaService.get(updateFilm.getMpa().getId()));
         genreStorage.load(List.of(updateFilm));
+        directorStorage.load(List.of(updateFilm));
 
         return updateFilm;
     }
@@ -78,9 +85,6 @@ public class FilmService {
         }
         if (film.getReleaseDate().isBefore(CINEMA_BIRTHDAY)) {
             throw new BadRequestException("Release date cannot be earlier than December 28, 1895");
-        }
-        if (film.getReleaseDate().isAfter(LocalDate.now())) {
-            throw new BadRequestException("Release date cannot be in the future");
         }
         if (film.getDuration() <= 0) {
             throw new BadRequestException("Invalid film duration");
@@ -102,8 +106,31 @@ public class FilmService {
     public List<Film> getPopular(int count) {
         final List<Film> films = likesStorage.getPopular(count);
         genreStorage.load(films);
+        directorStorage.load(films);
+
         return films;
     }
+
+    public List<Film> getByDirector(long directorId, String sortBy) {
+        final List<Film> films;
+
+        if(directorStorage.find(directorId).isEmpty()){
+            throw new DataNotFoundException("Director not found");
+        }
+
+        if (sortBy.equals("likes")) {
+            films = directorStorage.getDirectorFilmsByPopular(directorId);
+        } else {
+            films = directorStorage.getDirectorFilmsByYears(directorId);
+        }
+
+        genreStorage.load(films);
+        directorStorage.load(films);
+
+        return films;
+    }
+
+
 
     private Film find(long id) {
         return filmStorage.find(id).orElseThrow(() -> new DataNotFoundException("id=" + id));
