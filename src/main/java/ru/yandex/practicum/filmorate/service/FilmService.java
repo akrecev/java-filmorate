@@ -100,7 +100,9 @@ public class FilmService {
     }
 
     public List<Film> getPopular(int count) {
-        return likesStorage.getPopular(count);
+        final List<Film> films = likesStorage.getPopular(count);
+        genreStorage.load(films);
+        return films;
     }
 
     private Film find(long id) {

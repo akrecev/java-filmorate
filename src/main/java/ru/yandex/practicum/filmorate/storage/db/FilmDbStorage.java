@@ -50,9 +50,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film update(Film updateFilm) {
         final String sql = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, DURATION = ?, RELEASE_DATE = ?, " +
-                "RATE = ?, MPA_ID = ? WHERE FILM_ID = ?";
+                "MPA_ID = ? WHERE FILM_ID = ?";
         jdbcTemplate.update(sql, updateFilm.getName(), updateFilm.getDescription(), updateFilm.getDuration(),
-                updateFilm.getReleaseDate(), updateFilm.getRate(), updateFilm.getMpa().getId(), updateFilm.getId());
+                updateFilm.getReleaseDate(), updateFilm.getMpa().getId(), updateFilm.getId());
         saveGenres(updateFilm);
 
         return find(updateFilm.getId()).get();
