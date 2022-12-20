@@ -27,7 +27,6 @@ create table IF NOT EXISTS FILMS
         primary key (FILM_ID),
     constraint FILMS_MPA_MPA_ID_FK
         foreign key (MPA_ID) references MPA
-            on delete cascade
 );
 
 create table IF NOT EXISTS FILM_GENRES
