@@ -122,10 +122,8 @@ public class FilmDbStorage implements FilmStorage {
                 "INNER JOIN LIKES AS A ON A.FILM_ID = F.FILM_ID " +
                 "INNER JOIN LIKES AS B ON B.FILM_ID = F.FILM_ID " +
                 "INNER JOIN MPA AS С ON С.MPA_ID = F.MPA_ID " +
-                "LEFT JOIN (SELECT FILM_ID, COUNT(USER_ID) AS RATE FROM LIKES GROUP BY FILM_ID) AS FL " +
-                "ON (FL.FILM_ID = F.FILM_ID) " +
                 "WHERE A.USER_ID = ? AND B.USER_ID = ?" +
-                "ORDER BY FL.RATE DESC";
+                "ORDER BY RATE DESC";
 
         return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, id, otherId);
     }
