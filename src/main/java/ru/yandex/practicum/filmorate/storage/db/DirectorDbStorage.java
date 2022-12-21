@@ -1,8 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,20 +15,20 @@ import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
 public class DirectorDbStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public DirectorDbStorage(JdbcTemplate jdbcTemplate) {
+    public DirectorDbStorage(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     static Director directorMapper(ResultSet rs, int rowNum) throws SQLException {
@@ -80,15 +84,30 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public void load(List<Film> films) {
-        String toSql = String.join(",", Collections.nCopies(films.size(), "?"));
-        films.forEach(film -> film.getDirectors().clear());
-        final Map<Long, Film> filmMap = films.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
-        final String sql = "SELECT * FROM DIRECTORS D, FILM_DIRECTORS FD " +
-                "WHERE D.DIRECTOR_ID = FD.DIRECTOR_ID AND FILM_ID IN(" + toSql + ") ";
-        jdbcTemplate.query(sql, (rs) -> {
-            final Film film = filmMap.get(rs.getLong("FILM_ID"));
-            film.getDirectors().add(directorMapper(rs, 0));
-        }, films.stream().map(Film::getId).toArray());
+        final String sql = "SELECT FD.FILM_ID, FD.DIRECTOR_ID, D.DIRECTOR_NAME FROM FILM_DIRECTORS FD " +
+                "JOIN DIRECTORS D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "WHERE FD.FILM_ID IN (:filmIds)";
+
+        List<Long> filmdIds = films.stream()
+                .map(Film::getId)
+                .collect(Collectors.toList());
+
+        Map<Long, Film> filmMap = films.stream()
+                .collect(Collectors.toMap(Film::getId, film -> film, (a, b) -> b));
+
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource("filmIds", filmdIds);
+        SqlRowSet sqlRowSet = namedParameterJdbcTemplate.queryForRowSet(sql, sqlParameterSource);
+
+        while (sqlRowSet.next()) {
+            filmMap.get(sqlRowSet.getLong("FILM_ID")).getDirectors().add(new Director(
+                    sqlRowSet.getLong("DIRECTOR_ID"),
+                    sqlRowSet.getString("DIRECTOR_NAME")
+            ));
+        }
+
+        films.forEach(film -> film.getDirectors().addAll(
+                filmMap.get(film.getId()).getDirectors()
+        ));
     }
 
     @Override
