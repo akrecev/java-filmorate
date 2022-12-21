@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.LikesStorage;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class LikesDbStorage implements LikesStorage {
@@ -35,6 +37,54 @@ public class LikesDbStorage implements LikesStorage {
         final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID ORDER BY RATE DESC LIMIT ?";
 
         return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, count);
+    }
+
+    @Override
+    public List<Film> getFilmsRecommendationsFor(long id) {
+        String sqlGetLikesFilmUser = "SELECT user_id, count(user_id) count_user\n" +
+                " FROM likes\n" +
+                " WHERE film_id IN (SELECT DISTINCT(film_id)\n" +
+                "                   FROM likes\n" +
+                "                   WHERE user_id = ?)\n" +
+                "   AND user_id <> ?\n" +
+                " GROUP BY user_id;";
+
+        SqlRowSet usersWithCountRows = jdbcTemplate.queryForRowSet(sqlGetLikesFilmUser, id, id);
+
+        Map<Long, Long> UsersAll = new HashMap<>();
+        while (usersWithCountRows.next()) {
+            UsersAll.put(usersWithCountRows.getLong("user_id"),
+                    usersWithCountRows.getLong("count_user"));
+        }
+
+        final Optional<Long> maxCountCommonLikes = UsersAll.values().stream().max(Long::compareTo);
+
+        List<Long> userForRecommends = UsersAll.entrySet().stream()
+                .filter(user-> user.getValue().equals(maxCountCommonLikes.get()))
+                .filter(user-> user.getKey() != id)
+                .map(user -> user.getKey()).collect(Collectors.toList());
+
+        if (userForRecommends.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String joinUsers = userForRecommends.stream().map(String::valueOf)
+                .collect(Collectors.joining(", "));
+
+        String res = "SELECT * FROM FILMS F, MPA M\n" +
+                "WHERE F.mpa_id = M.mpa_id AND\n" +
+                "F.film_id IN (SELECT film_id\n" +
+                "               FROM LIKES\n" +
+                "               WHERE F.film_id IN\n" +
+                "                       (SELECT DISTINCT(film_id)\n" +
+                "                       FROM likes\n" +
+                "                       WHERE user_id IN (?) AND\n" +
+                "                           film_id NOT IN\n" +
+                "                           (SELECT DISTINCT(film_id)\n" +
+                "                           FROM likes WHERE user_id=?)))\n" +
+                "ORDER BY RATE;";
+
+        return jdbcTemplate.query(res, FilmDbStorage::filmMapper, joinUsers, id);
     }
 
     private void updateRate(long filmId) {

@@ -12,4 +12,5 @@ public interface LikesStorage {
 
     List<Film> getPopular(int count);
 
+    List<Film> getFilmsRecommendationsFor(long id);
 }
