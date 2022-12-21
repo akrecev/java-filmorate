@@ -10,6 +10,6 @@ public interface LikesStorage {
 
     void removeLike(long filmId, long userId);
 
-    List<Film> getPopular(int count);
+    List<Film> getPopularFilmByGenreAndYear(int count, int genreId, int year);
 
 }
