@@ -14,6 +14,14 @@ create table IF NOT EXISTS MPA
         primary key (MPA_ID)
 );
 
+create table IF NOT EXISTS DIRECTORS
+(
+    DIRECTOR_ID   INTEGER auto_increment,
+    DIRECTOR_NAME CHARACTER VARYING(200) not null,
+    constraint "DIRECTORS_pk"
+        primary key (DIRECTOR_ID)
+);
+
 create table IF NOT EXISTS FILMS
 (
     FILM_ID      INTEGER auto_increment,
@@ -40,6 +48,20 @@ create table IF NOT EXISTS FILM_GENRES
             on delete cascade,
     constraint "FILM_GENRES_GENRES_null_fk"
         foreign key (GENRE_ID) references GENRES
+            on delete cascade
+);
+
+create table IF NOT EXISTS FILM_DIRECTORS
+(
+    FILM_ID  INTEGER not null,
+    DIRECTOR_ID INTEGER not null,
+    constraint "FILM_DIRECTORS_pk"
+        primary key (FILM_ID, DIRECTOR_ID),
+    constraint "FILM_DIRECTORS_FILMS_null_fk"
+        foreign key (FILM_ID) references FILMS
+            on delete cascade,
+    constraint "FILM_DIRECTORS_DIRECTORS_null_fk"
+        foreign key (DIRECTOR_ID) references DIRECTORS
             on delete cascade
 );
 
