@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -107,6 +108,9 @@ public class FilmService {
         final List<Film> films = likesStorage.getPopular(count);
         genreStorage.load(films);
         return films;
+    }
+    public List<Film> getCommonFilm(long id, long otherId) {
+        return filmStorage.getCommonFilm(id, otherId);
     }
 
     private Film find(long id) {

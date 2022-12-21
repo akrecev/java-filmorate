@@ -116,5 +116,16 @@ public class FilmDbStorage implements FilmStorage {
                 }
         );
     }
+    @Override
+    public List<Film> getCommonFilm(long id, long otherId) {
+        final String sql = "SELECT * FROM FILMS AS F " +
+                "INNER JOIN LIKES AS A ON A.FILM_ID = F.FILM_ID " +
+                "INNER JOIN LIKES AS B ON B.FILM_ID = F.FILM_ID " +
+                "INNER JOIN MPA AS С ON С.MPA_ID = F.MPA_ID " +
+                "WHERE A.USER_ID = ? AND B.USER_ID = ?" +
+                "ORDER BY RATE DESC";
+
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, id, otherId);
+    }
 
 }

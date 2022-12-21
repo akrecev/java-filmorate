@@ -71,4 +71,13 @@ public class FilmController {
         return filmService.getPopular(count);
     }
 
+    @GetMapping("/common")
+    public List<Film> getCommonFilm(
+            @RequestParam(value = "userId") long id,
+            @RequestParam(value = "friendId") long otherId) {
+        log.debug("Get common films user id:{} & user id:{}", id, otherId);
+
+        return filmService.getCommonFilm(id, otherId);
+    }
+
 }
