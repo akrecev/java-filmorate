@@ -104,8 +104,8 @@ public class FilmService {
         likesStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getPopular(int count) {
-        final List<Film> films = likesStorage.getPopular(count);
+    public List<Film> getPopularFilmByGenreAndYear(int count, int genreId, int year) {
+        final List<Film> films = likesStorage.getPopularFilmByGenreAndYear(count, genreId, year);
         genreStorage.load(films);
         return films;
     }

@@ -31,10 +31,37 @@ public class LikesDbStorage implements LikesStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count) {
-        final String sql = "SELECT * FROM FILMS F, MPA M WHERE F.MPA_ID = M.MPA_ID ORDER BY RATE DESC LIMIT ?";
+    public List<Film> getPopularFilmByGenreAndYear(int count, int genreId, int year) {
 
-        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, count);
+        final String popularFilmsByYear = "SELECT * FROM FILMS F, MPA M " +
+                "WHERE F.MPA_ID = M.MPA_ID AND YEAR(RELEASE_DATE) = ? " +
+                "ORDER BY RATE DESC LIMIT ?";
+
+        final String popularFilmsByGenre = "SELECT * FROM FILMS F, MPA M " +
+                "INNER JOIN FILM_GENRES AS G ON G.FILM_ID = F.FILM_ID " +
+                "WHERE F.MPA_ID = M.MPA_ID AND G.GENRE_ID = ? " +
+                "ORDER BY RATE DESC LIMIT ?";
+
+        final String popularFilmsByYearAndGenre = "SELECT * FROM FILMS F, MPA M " +
+                "INNER JOIN FILM_GENRES AS G ON G.FILM_ID = F.FILM_ID " +
+                "WHERE F.MPA_ID = M.MPA_ID AND G.GENRE_ID = ? AND YEAR(RELEASE_DATE) = ?" +
+                "ORDER BY RATE DESC LIMIT ?";
+
+        final String popularFilmsByCount = "SELECT * FROM FILMS F, MPA M " +
+                "WHERE F.MPA_ID = M.MPA_ID " +
+                "ORDER BY RATE DESC LIMIT ?";
+
+        if (genreId == 0 & year == 0) {
+            return jdbcTemplate.query(popularFilmsByCount, FilmDbStorage::filmMapper, count);
+        }
+        if (genreId == 0) {
+            return jdbcTemplate.query(popularFilmsByYear, FilmDbStorage::filmMapper, year, count);
+
+        }
+        if (year == 0) {
+            return jdbcTemplate.query(popularFilmsByGenre, FilmDbStorage::filmMapper, genreId, count);
+        }
+        return jdbcTemplate.query(popularFilmsByYearAndGenre, FilmDbStorage::filmMapper, genreId, year, count);
     }
 
     private void updateRate(long filmId) {
