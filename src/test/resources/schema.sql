@@ -83,3 +83,49 @@ create table IF NOT EXISTS LIKES
         foreign key (USER_ID) references USERS
             on delete cascade
 );
+
+create table REVIEWS
+(
+    review_id  INTEGER auto_increment
+        primary key,
+    is_positive BOOLEAN not null,
+    content    CHARACTER VARYING(5000),
+    user_id    INTEGER not null,
+    film_id    INTEGER not null,
+    useful     INTEGER,
+    constraint REVIEWS_FILMS_FILM_ID_FK
+        foreign key (film_id) references FILMS
+            on delete cascade,
+    constraint REVIEWS_USERS_USER_ID_FK
+        foreign key (user_id) references USERS
+            on delete cascade
+);
+
+create table REVIEW_LIKES
+(
+    user_id   INTEGER not null,
+    review_id INTEGER not null,
+    constraint REVIEW_LIKES_PK
+        primary key (user_id, review_id),
+    constraint REVIEW_LIKES_REVIEWS_REVIEW_ID_FK
+        foreign key (review_id) references REVIEWS
+            on delete cascade,
+    constraint REVIEW_LIKES_USERS_USER_ID_FK
+        foreign key (user_id) references USERS
+            on delete cascade
+);
+
+
+create table REVIEW_DISLIKES
+(
+    user_id   INTEGER not null,
+    review_id INTEGER not null,
+    constraint REVIEW_DISLIKES_PK
+        primary key (user_id, review_id),
+    constraint REVIEW_DISLIKES_REVIEWS_REVIEW_ID_FK
+        foreign key (review_id) references REVIEWS
+            on delete cascade,
+    constraint REVIEW_DISLIKES_USERS_USER_ID_FK
+        foreign key (user_id) references USERS
+            on delete cascade
+);
