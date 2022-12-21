@@ -109,7 +109,7 @@ public class UserService {
         }
     }
 
-    private User find(long id) {
+    User find(long id) {
         return userStorage.find(id).orElseThrow(() -> new DataNotFoundException("id:" + id));
     }
 
