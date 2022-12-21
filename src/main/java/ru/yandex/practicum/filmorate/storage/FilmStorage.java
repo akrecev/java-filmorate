@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -16,5 +17,7 @@ public interface FilmStorage {
     void delete(long id);
 
     List<Film> getAll();
+
+    List<Film> getCommonFilm(long id, long otherId);
 
 }

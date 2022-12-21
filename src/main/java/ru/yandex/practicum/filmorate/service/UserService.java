@@ -45,6 +45,11 @@ public class UserService {
         return userStorage.update(user);
     }
 
+    public void delete(long id) {
+        userStorage.delete(id);
+    }
+
+
     public void throwBadRequest(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             throw new BadRequestException("Invalid user email");
@@ -104,7 +109,7 @@ public class UserService {
         }
     }
 
-    private User find(long id) {
+    User find(long id) {
         return userStorage.find(id).orElseThrow(() -> new DataNotFoundException("id:" + id));
     }
 
