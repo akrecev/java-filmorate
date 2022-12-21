@@ -84,7 +84,7 @@ create table IF NOT EXISTS LIKES
             on delete cascade
 );
 
-create table REVIEWS
+create table IF NOT EXISTS REVIEWS
 (
     review_id  INTEGER auto_increment
         primary key,
@@ -101,7 +101,7 @@ create table REVIEWS
             on delete cascade
 );
 
-create table REVIEW_LIKES
+create table IF NOT EXISTS REVIEW_LIKES
 (
     user_id   INTEGER not null,
     review_id INTEGER not null,
@@ -116,7 +116,7 @@ create table REVIEW_LIKES
 );
 
 
-create table REVIEW_DISLIKES
+create table IF NOT EXISTS REVIEW_DISLIKES
 (
     user_id   INTEGER not null,
     review_id INTEGER not null,
