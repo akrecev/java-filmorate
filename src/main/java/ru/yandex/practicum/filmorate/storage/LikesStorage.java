@@ -12,4 +12,5 @@ public interface LikesStorage {
 
     List<Film> getPopularFilmByGenreAndYear(int count, int genreId, int year);
 
+    List<Film> getFilmsRecommendationsFor(long id);
 }

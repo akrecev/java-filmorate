@@ -4,8 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.LikesStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -16,11 +19,15 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
-
+    private final LikesStorage likesStorage;
+    private final GenreStorage genreStorage;
     @Autowired
-    public UserService(UserStorage userStorage, FriendStorage friendStorage) {
+    public UserService(UserStorage userStorage, FriendStorage friendStorage,
+                       LikesStorage likesStorage, GenreStorage genreStorage) {
         this.userStorage = userStorage;
         this.friendStorage = friendStorage;
+        this.likesStorage = likesStorage;
+        this.genreStorage = genreStorage;
     }
 
     public User create(User user) {
@@ -100,6 +107,15 @@ public class UserService {
         return friendStorage.getStatusFriendship(id, friendId);
     }
 
+    public List<Film> getFilmsRecommendationsFor(long id) {
+        find(id);
+
+        var allFilms = likesStorage.getFilmsRecommendationsFor(id);
+        genreStorage.load(allFilms);
+
+        return allFilms;
+    }
+
     private void setNameIfEmpty(User user) {
         if (user.getName() == null) {
             user.setName(user.getLogin());
@@ -112,6 +128,4 @@ public class UserService {
     User find(long id) {
         return userStorage.find(id).orElseThrow(() -> new DataNotFoundException("id:" + id));
     }
-
-
 }
