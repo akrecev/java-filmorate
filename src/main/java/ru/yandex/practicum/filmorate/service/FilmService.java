@@ -144,4 +144,27 @@ public class FilmService {
         return filmStorage.find(id).orElseThrow(() -> new DataNotFoundException("id=" + id));
     }
 
+    public List<Film> searchFilms(String query, String by) {
+        final List<Film> allFilms;
+        final String searchRequest = query.toLowerCase();
+        switch (by) {
+            case "director,title":
+            case "title,director":
+                allFilms = filmStorage.searchFilmsByTitleOrDirectorName(searchRequest);
+                break;
+            case "title" :
+                allFilms = filmStorage.searchFilmsByTitle(searchRequest);
+                break;
+            case "director":
+                allFilms = filmStorage.searchFilmsByDirectorName(searchRequest);
+                break;
+            default:
+                throw new BadRequestException("Invalid by parameter");
+        }
+
+        genreStorage.load(allFilms);
+        directorStorage.load(allFilms);
+
+        return allFilms;
+    }
 }

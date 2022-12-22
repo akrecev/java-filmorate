@@ -15,7 +15,11 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class FilmDbStorage implements FilmStorage {
@@ -154,5 +158,42 @@ public class FilmDbStorage implements FilmStorage {
                     }
                 }
         );
+    }
+
+    @Override
+    public List<Film> searchFilmsByTitle(String query) {
+        String searchRequest = "%" + query + "%";
+        final String sql = "SELECT * FROM FILMS F " +
+                "LEFT JOIN MPA M ON F.MPA_ID = M.MPA_ID " +
+                "WHERE LOWER( F.FILM_NAME ) LIKE ? " +
+                "ORDER BY F.RATE DESC";
+
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, searchRequest);
+    }
+
+    @Override
+    public List<Film> searchFilmsByDirectorName(String query) {
+        String searchRequest = "%" + query + "%";
+        final String sql = "SELECT * FROM FILMS F " +
+                "LEFT JOIN MPA M ON F.MPA_ID = M.MPA_ID " +
+                "LEFT JOIN FILM_DIRECTORS FD ON FD.FILM_ID = F.FILM_ID " +
+                "LEFT JOIN DIRECTORS D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "WHERE LOWER( D.DIRECTOR_NAME ) LIKE ? " +
+                "ORDER BY F.RATE DESC";
+
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, searchRequest);
+    }
+
+    @Override
+    public List<Film> searchFilmsByTitleOrDirectorName(String query) {
+        String searchRequest = "%" + query + "%";
+        final String sql = "SELECT * FROM FILMS F " +
+                "LEFT JOIN MPA M ON F.MPA_ID = M.MPA_ID " +
+                "LEFT JOIN FILM_DIRECTORS FD ON FD.FILM_ID = F.FILM_ID " +
+                "LEFT JOIN DIRECTORS D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "WHERE ( LOWER( F.FILM_NAME ) LIKE ? OR LOWER( D.DIRECTOR_NAME ) LIKE ?)" +
+                "ORDER BY F.RATE DESC";
+
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, searchRequest, searchRequest);
     }
 }
