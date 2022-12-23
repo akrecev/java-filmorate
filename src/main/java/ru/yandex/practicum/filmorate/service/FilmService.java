@@ -2,15 +2,13 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
+import ru.yandex.practicum.filmorate.model.EntityActions;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.LikesStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -26,15 +24,18 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
 
+    private final UserActionsStorage userActionsStorage;
+
     @Autowired
     public FilmService(FilmStorage filmStorage, UserService userService, LikesStorage likesStorage,
-                       MpaService mpaService, GenreStorage genreStorage, DirectorStorage directorStorage) {
+                       MpaService mpaService, GenreStorage genreStorage, DirectorStorage directorStorage, UserActionsStorage userActionsStorage) {
         this.filmStorage = filmStorage;
         this.userService = userService;
         this.likesStorage = likesStorage;
         this.mpaService = mpaService;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
+        this.userActionsStorage = userActionsStorage;
     }
 
     public Film create(Film film) {
@@ -100,12 +101,34 @@ public class FilmService {
         throwBadRequest(find(filmId));
         userService.throwBadRequest(userService.get(userId));
         likesStorage.addLike(filmId, userId);
+
+        userActionsStorage.addAction(
+                EntityActions.builder()
+                        .eventId(0)
+                        .userId(userId)
+                        .entityId(filmId)
+                        .eventType("LIKE")
+                        .operation("ADD")
+                        .timestamp(new Timestamp(System.currentTimeMillis()).getTime())
+                        .build()
+        );
     }
 
     public void removeLike(long filmId, long userId) {
         throwBadRequest(find(filmId));
         userService.throwBadRequest(userService.get(userId));
         likesStorage.removeLike(filmId, userId);
+
+        userActionsStorage.addAction(
+                EntityActions.builder()
+                        .eventId(0)
+                        .userId(userId)
+                        .entityId(filmId)
+                        .eventType("LIKE")
+                        .operation("REMOVE")
+                        .timestamp(new Timestamp(System.currentTimeMillis()).getTime())
+                        .build()
+        );
     }
 
     public List<Film> getPopularFilmByGenreAndYear(int count, int genreId, int year) {
@@ -137,8 +160,6 @@ public class FilmService {
 
         return films;
     }
-
-
 
     private Film find(long id) {
         return filmStorage.find(id).orElseThrow(() -> new DataNotFoundException("id=" + id));
