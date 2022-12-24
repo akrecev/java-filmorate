@@ -34,14 +34,14 @@ public class ReviewController {
     @GetMapping()
     private List<Review> getFilmAllReviews(@RequestParam(defaultValue = "0") long filmId,
                                            @RequestParam(defaultValue = "10") int count) {
+        List<Review> reviews;
         if (filmId == 0) {
-            List<Review> reviews = reviewService.getAllReviews(count);
+            reviews = reviewService.getAllReviews(count);
             log.debug("Get {} reviews", reviews.size());
-
-            return reviews;
+        } else {
+            reviews = reviewService.getFilmAllReviews(filmId, count);
+            log.debug("Get {} reviews for film id:{}", reviews.size(), filmId);
         }
-        List<Review> reviews = reviewService.getFilmAllReviews(filmId, count);
-        log.debug("Get {} reviews for film id:{}", reviews.size(), filmId);
 
         return reviews;
     }
