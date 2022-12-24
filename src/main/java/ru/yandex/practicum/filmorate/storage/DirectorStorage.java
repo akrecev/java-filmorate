@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DirectorStorage {
-    Director save(Director director);
+    void save(Director director);
 
     Director update(Director director);
 

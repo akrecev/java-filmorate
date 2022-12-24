@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.db;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -7,7 +8,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
@@ -21,26 +22,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
+@Repository
+@RequiredArgsConstructor
 public class DirectorDbStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public DirectorDbStorage(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-    }
-
-    static Director directorMapper(ResultSet rs, int rowNum) throws SQLException {
-        Director director = new Director();
-        director.setId(rs.getLong("DIRECTOR_ID"));
-        director.setName(rs.getString("DIRECTOR_NAME"));
-        return director;
-    }
-
     @Override
-    public Director save(Director director) {
-        String sql = "INSERT INTO DIRECTORS(DIRECTOR_NAME) VALUES (?)";
+    public void save(Director director) {
+        String sql = "INSERT INTO DIRECTORS (DIRECTOR_NAME) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"DIRECTOR_ID"});
@@ -49,8 +39,6 @@ public class DirectorDbStorage implements DirectorStorage {
         }, keyHolder);
         final long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
         director.setId(id);
-
-        return find(id).get();
     }
 
     @Override
@@ -122,5 +110,12 @@ public class DirectorDbStorage implements DirectorStorage {
         final String sql = "SELECT * FROM FILMS F, FILM_DIRECTORS FD, MPA M WHERE F.MPA_ID = M.MPA_ID AND F.FILM_ID = FD.FILM_ID AND FD.DIRECTOR_ID = ? ORDER BY F.RATE DESC";
 
         return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, directorId);
+    }
+
+    private static Director directorMapper(ResultSet rs, int rowNum) throws SQLException {
+        Director director = new Director();
+        director.setId(rs.getLong("DIRECTOR_ID"));
+        director.setName(rs.getString("DIRECTOR_NAME"));
+        return director;
     }
 }
