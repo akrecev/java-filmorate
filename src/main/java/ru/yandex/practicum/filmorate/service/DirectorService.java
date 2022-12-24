@@ -19,7 +19,8 @@ public class DirectorService {
 
     public Director create(Director director) {
         throwBadRequest(director);
-        return directorStorage.save(director);
+        directorStorage.save(director);
+        return get(director.getId());
     }
 
     public Director get(long id) {
