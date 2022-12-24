@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
@@ -8,14 +9,11 @@ import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class DirectorService {
 
     private final DirectorStorage directorStorage;
-
-    public DirectorService(DirectorStorage directorStorage) {
-        this.directorStorage = directorStorage;
-    }
 
     public Director create(Director director) {
         throwBadRequest(director);

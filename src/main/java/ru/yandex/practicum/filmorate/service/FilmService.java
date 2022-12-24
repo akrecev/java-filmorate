@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class FilmService {
 
@@ -23,25 +24,7 @@ public class FilmService {
     private final MpaService mpaService;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
-
     private final UserActionsStorage userActionsStorage;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage,
-                       UserService userService,
-                       LikesStorage likesStorage,
-                       MpaService mpaService,
-                       GenreStorage genreStorage,
-                       DirectorStorage directorStorage,
-                       UserActionsStorage userActionsStorage) {
-        this.filmStorage = filmStorage;
-        this.userService = userService;
-        this.likesStorage = likesStorage;
-        this.mpaService = mpaService;
-        this.genreStorage = genreStorage;
-        this.directorStorage = directorStorage;
-        this.userActionsStorage = userActionsStorage;
-    }
 
     public Film create(Film film) {
         throwBadRequest(film);
