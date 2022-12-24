@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
@@ -22,15 +23,6 @@ public class UserService {
     private final GenreStorage genreStorage;
 
     private final UserActionsStorage userActionsStorage;
-    @Autowired
-    public UserService(UserStorage userStorage, FriendStorage friendStorage,
-                       LikesStorage likesStorage, GenreStorage genreStorage, UserActionsStorage userActionsStorage) {
-        this.userStorage = userStorage;
-        this.friendStorage = friendStorage;
-        this.likesStorage = likesStorage;
-        this.genreStorage = genreStorage;
-        this.userActionsStorage = userActionsStorage;
-    }
 
     public User create(User user) {
         throwBadRequest(user);
@@ -122,13 +114,6 @@ public class UserService {
         find(otherId);
 
         return friendStorage.getCommonFriends(id, otherId);
-    }
-
-    public Boolean getStatusFriendship(long id, long friendId) {
-        find(id);
-        find(friendId);
-
-        return friendStorage.getStatusFriendship(id, friendId);
     }
 
     public List<Film> getFilmsRecommendationsFor(long id) {

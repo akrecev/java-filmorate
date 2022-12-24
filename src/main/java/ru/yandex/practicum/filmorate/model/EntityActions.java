@@ -6,29 +6,27 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Positive;
 
-@Data
+
 @Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 public class EntityActions {
 
     int eventId;
 
-    @Positive(message = "Ошибка при указании индекса пользователя у сущности EntityActions, " +
-            "значение должно быть положительным.")
+    @Positive
     long userId;
 
-    @Positive(message = "Ошибка при указании индекса сущности субъекта, значение должно быть положительным.")
+    @Positive
     long entityId;
 
-    @Length(max = 10,
-            message = "Значение длинны типа операции слишком длинное."
-    )
+    @Length(max = 10)
     String eventType;
 
-    @Length(max = 10,
-            message = "Значение длинны описания операции слишком длинное."
-    )
+    @Length(max = 10)
     String operation;
 
     @NonNull()

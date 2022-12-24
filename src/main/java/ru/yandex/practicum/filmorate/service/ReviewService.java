@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
@@ -12,20 +12,13 @@ import ru.yandex.practicum.filmorate.storage.UserActionsStorage;
 import java.sql.Timestamp;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class ReviewService {
 
     private final ReviewStorage reviewStorage;
     private final UserService userService;
-
     private final UserActionsStorage userActionsStorage;
-
-    @Autowired
-    public ReviewService(ReviewStorage reviewStorage, UserService userService, UserActionsStorage userActionsStorage) {
-        this.reviewStorage = reviewStorage;
-        this.userService = userService;
-        this.userActionsStorage = userActionsStorage;
-    }
 
     public Review create(Review review) {
 
