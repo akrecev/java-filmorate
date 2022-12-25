@@ -4,7 +4,8 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -16,7 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-@Component
+@Repository
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -43,6 +44,7 @@ public class FilmDbStorage implements FilmStorage {
         final long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
         film.setId(id);
         saveGenres(film);
+        saveDirectors(film);
 
         return find(id).get();
     }
@@ -54,6 +56,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, updateFilm.getName(), updateFilm.getDescription(), updateFilm.getDuration(),
                 updateFilm.getReleaseDate(), updateFilm.getMpa().getId(), updateFilm.getId());
         saveGenres(updateFilm);
+        saveDirectors(updateFilm);
 
         return find(updateFilm.getId()).get();
     }
@@ -116,5 +119,77 @@ public class FilmDbStorage implements FilmStorage {
                 }
         );
     }
+    @Override
+    public List<Film> getCommonFilm(long id, long otherId) {
+        final String sql = "SELECT * FROM FILMS AS F " +
+                "INNER JOIN LIKES AS A ON A.FILM_ID = F.FILM_ID " +
+                "INNER JOIN LIKES AS B ON B.FILM_ID = F.FILM_ID " +
+                "INNER JOIN MPA AS С ON С.MPA_ID = F.MPA_ID " +
+                "WHERE A.USER_ID = ? AND B.USER_ID = ?" +
+                "ORDER BY RATE DESC";
 
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, id, otherId);
+    }
+
+    private void saveDirectors(Film film) {
+        final long filmId = film.getId();
+        jdbcTemplate.update("DELETE FROM FILM_DIRECTORS WHERE FILM_ID = ?", filmId);
+        final LinkedHashSet<Director> directors = film.getDirectors();
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+        final List<Director> directorList = new LinkedList<>(directors);
+        jdbcTemplate.batchUpdate(
+                "MERGE INTO FILM_DIRECTORS(FILM_ID, DIRECTOR_ID) VALUES (?, ?)",
+                new BatchPreparedStatementSetter() {
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        ps.setLong(1, filmId);
+                        ps.setLong(2, directorList.get(i).getId());
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return directorList.size();
+                    }
+                }
+        );
+    }
+
+    @Override
+    public List<Film> searchFilmsByTitle(String query) {
+        String searchRequest = "%" + query + "%";
+        final String sql = "SELECT * FROM FILMS F " +
+                "LEFT JOIN MPA M ON F.MPA_ID = M.MPA_ID " +
+                "WHERE LOWER( F.FILM_NAME ) LIKE ? " +
+                "ORDER BY F.RATE DESC";
+
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, searchRequest);
+    }
+
+    @Override
+    public List<Film> searchFilmsByDirectorName(String query) {
+        String searchRequest = "%" + query + "%";
+        final String sql = "SELECT * FROM FILMS F " +
+                "LEFT JOIN MPA M ON F.MPA_ID = M.MPA_ID " +
+                "LEFT JOIN FILM_DIRECTORS FD ON FD.FILM_ID = F.FILM_ID " +
+                "LEFT JOIN DIRECTORS D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "WHERE LOWER( D.DIRECTOR_NAME ) LIKE ? " +
+                "ORDER BY F.RATE DESC";
+
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, searchRequest);
+    }
+
+    @Override
+    public List<Film> searchFilmsByTitleOrDirectorName(String query) {
+        String searchRequest = "%" + query + "%";
+        final String sql = "SELECT * FROM FILMS F " +
+                "LEFT JOIN MPA M ON F.MPA_ID = M.MPA_ID " +
+                "LEFT JOIN FILM_DIRECTORS FD ON FD.FILM_ID = F.FILM_ID " +
+                "LEFT JOIN DIRECTORS D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "WHERE ( LOWER( F.FILM_NAME ) LIKE ? OR LOWER( D.DIRECTOR_NAME ) LIKE ?)" +
+                "ORDER BY F.RATE DESC";
+
+        return jdbcTemplate.query(sql, FilmDbStorage::filmMapper, searchRequest, searchRequest);
+    }
 }

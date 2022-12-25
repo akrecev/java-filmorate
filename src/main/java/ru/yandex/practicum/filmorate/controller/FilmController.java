@@ -46,6 +46,12 @@ public class FilmController {
         return filmService.get(id);
     }
 
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable long id) {
+        log.debug("Delete film id:{}", id);
+        filmService.delete(id);
+    }
+
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable long id, @PathVariable long userId) {
         log.debug("Add like film id:{} from user id:{}", id, userId);
@@ -59,10 +65,38 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
-        log.debug("Get popular films count={}", count);
+    public List<Film> getPopularFilmByGenreAndYear(
+            @RequestParam(required = false, defaultValue = "10") int count,
+            @RequestParam(value = "genreId", required = false, defaultValue = "0") int genreId,
+            @RequestParam(value = "year", required = false, defaultValue = "0") int year) {
+        log.debug("Get popular films with genre:{} & year:{}, count:{} ", genreId, year, count);
 
-        return filmService.getPopular(count);
+        return filmService.getPopularFilmByGenreAndYear(count, genreId, year);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> get(@PathVariable long directorId, @RequestParam(defaultValue = "year") String sortBy) {
+        log.debug("Get films by director={} and sort by={}", directorId, sortBy);
+
+        return filmService.getByDirector(directorId, sortBy);
+    }
+  
+    @GetMapping("/common")
+    public List<Film> getCommonFilm(
+            @RequestParam(value = "userId") long id,
+            @RequestParam(value = "friendId") long otherId) {
+        log.debug("Get common films user id:{} & user id:{}", id, otherId);
+
+        return filmService.getCommonFilm(id, otherId);
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(
+            @RequestParam(value = "query") String query,
+            @RequestParam(value = "by") String by) {
+        log.debug("Search films query:{} & by:{}", query, by);
+
+        return filmService.searchFilms(query, by);
     }
 
 }

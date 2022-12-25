@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
@@ -23,10 +22,10 @@ public class Film {
     private String description;
     @Positive
     private int duration;
-    @PastOrPresent
+
     private LocalDate releaseDate;
     public long rate = 0L;
     private Mpa mpa;
     private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
-
+    private LinkedHashSet<Director> directors = new LinkedHashSet<>();
 }

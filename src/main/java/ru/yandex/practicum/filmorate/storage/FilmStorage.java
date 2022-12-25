@@ -17,4 +17,11 @@ public interface FilmStorage {
 
     List<Film> getAll();
 
+    List<Film> getCommonFilm(long id, long otherId);
+
+    List<Film> searchFilmsByTitle(String query);
+
+    List<Film> searchFilmsByDirectorName(String query);
+
+    List<Film> searchFilmsByTitleOrDirectorName(String query);
 }

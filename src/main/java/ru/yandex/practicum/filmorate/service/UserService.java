@@ -1,27 +1,28 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
+import ru.yandex.practicum.filmorate.model.EntityActions;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FriendStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
+    private final LikesStorage likesStorage;
+    private final GenreStorage genreStorage;
 
-    @Autowired
-    public UserService(UserStorage userStorage, FriendStorage friendStorage) {
-        this.userStorage = userStorage;
-        this.friendStorage = friendStorage;
-    }
+    private final UserActionsStorage userActionsStorage;
 
     public User create(User user) {
         throwBadRequest(user);
@@ -45,6 +46,11 @@ public class UserService {
         return userStorage.update(user);
     }
 
+    public void delete(long id) {
+        userStorage.delete(id);
+    }
+
+
     public void throwBadRequest(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             throw new BadRequestException("Invalid user email");
@@ -67,12 +73,34 @@ public class UserService {
         find(id);
         find(friendId);
         friendStorage.addFriend(id, friendId);
+
+        userActionsStorage.addAction(
+                EntityActions.builder()
+                        .eventId(0)
+                        .userId(id)
+                        .entityId(friendId)
+                        .eventType("FRIEND")
+                        .operation("ADD")
+                        .timestamp(new Timestamp(System.currentTimeMillis()).getTime())
+                        .build()
+        );
     }
 
     public void removeFriend(long id, long friendId) {
         find(id);
         find(friendId);
         friendStorage.removeFriend(id, friendId);
+
+        userActionsStorage.addAction(
+                EntityActions.builder()
+                        .eventId(0)
+                        .userId(id)
+                        .entityId(friendId)
+                        .eventType("FRIEND")
+                        .operation("REMOVE")
+                        .timestamp(new Timestamp(System.currentTimeMillis()).getTime())
+                        .build()
+        );
     }
 
     public List<User> getFriends(long id) {
@@ -88,11 +116,13 @@ public class UserService {
         return friendStorage.getCommonFriends(id, otherId);
     }
 
-    public Boolean getStatusFriendship(long id, long friendId) {
+    public List<Film> getFilmsRecommendationsFor(long id) {
         find(id);
-        find(friendId);
 
-        return friendStorage.getStatusFriendship(id, friendId);
+        var allFilms = likesStorage.getFilmsRecommendationsFor(id);
+        genreStorage.load(allFilms);
+
+        return allFilms;
     }
 
     private void setNameIfEmpty(User user) {
@@ -104,9 +134,14 @@ public class UserService {
         }
     }
 
-    private User find(long id) {
+    User find(long id) {
         return userStorage.find(id).orElseThrow(() -> new DataNotFoundException("id:" + id));
     }
 
+    public List<EntityActions> getUserFeed(int userId) {
 
+        find(userId);
+
+        return userActionsStorage.getNewsFeed(userId);
+    }
 }
